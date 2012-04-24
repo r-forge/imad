@@ -1,0 +1,4 @@
+export(cov.wt.raster)
+export(extract_overlap_rasters)
+export(iMad)
+export(Rdggev)

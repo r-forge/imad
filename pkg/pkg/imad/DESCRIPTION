@@ -1,0 +1,19 @@
+Package: imad
+Type: Package
+Title: Iteratively Re-weighted Multivariate Alteration Detection (iMAD)
+Version: 0.1
+Date: 23-April-2012
+Depends:
+    raster,
+    R (>= 2.11.0)
+Author: Mort Canty (original version) & Jonathan A. Greenberg (R port)
+Maintainer: Jonathan A. Greenberg <imad@estarcion.net>
+Description: Performs iMAD and related functions on multi- and hyperspectral
+    imagery.
+License: GPL (>=2)
+URL: http://imad.r-forge.r-project.org/
+Collate:
+    'cov.wt.raster.R'
+    'extract_overlap_rasters.R'
+    'iMad.R'
+    'Rdggev.R'
