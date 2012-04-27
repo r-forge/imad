@@ -71,6 +71,22 @@ RADCAL <- function(inDataSet1,inDataSet2,chisqr_raster,noChangeProbThresh=0.95,m
 		gains_and_offsets=cbind(gains,offsets)
 	}
 	
-	# Do an error check here:
-	return(gains*inDataSet2+offsets)
+	if(!is.na(apply_to_raster))
+	{
+		normalized_raster=gains*inDataSet2+offsets
+	}
+	
+	if(return_gains_and_offsets && !is.na(apply_to_raster))
+	{
+		return(list(normalized_raster,gains_and_offsets))
+	} else 
+	{
+		if(return_gains_and_offsets)
+		{
+			return(gains_and_offsets)
+		} else
+		{
+			return(normalized_raster)
+		}
+	}
 }
