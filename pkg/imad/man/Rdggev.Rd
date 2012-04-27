@@ -25,6 +25,11 @@
   (A,B) the generalized eigenvalues, and optionally, the
   left and/or right generalized eigenvectors.
 }
+\note{
+  Please see this thread for a discussion about this
+  function:
+  \url{http://tolstoy.newcastle.edu.au/R/e17/help/12/04/10951.html}
+}
 \examples{
 A <- matrix(c(1457.738, 1053.181, 1256.953,
              1053.181, 1213.728, 1302.838,

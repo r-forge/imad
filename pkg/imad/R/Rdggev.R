@@ -10,6 +10,7 @@
 #' @author Jonathan A. Greenberg
 # @seealso 
 # @keywords 
+#' @note Please see this thread for a discussion about this function: \url{http://tolstoy.newcastle.edu.au/R/e17/help/12/04/10951.html}
 #' @references \url{http://www.netlib.org/lapack/double/dggev.f}
 #' @examples
 #' A <- matrix(c(1457.738, 1053.181, 1256.953,

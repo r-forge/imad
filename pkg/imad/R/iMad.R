@@ -34,6 +34,7 @@
 # TODO: parallelize if/where possible
 # TODO: integrate penalization function for hyperspectral imagery.
 # TODO: write out full mask and check for existing masks.
+# TODO: give the output stack names
 
 iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose=FALSE,
 		auto_extract_overlap=TRUE,reuse_existing_overlap=TRUE,
