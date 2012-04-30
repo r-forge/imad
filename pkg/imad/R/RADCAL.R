@@ -58,7 +58,7 @@ RADCAL <- function(inDataSet1,inDataSet2,chisqr_raster,noChangeProbThresh=0.95,m
 	offsets=vector(mode="numeric",length=bands)
 	
 	# The orthogonal regression may run into sample size issues.
-	# Using http://zoonek2.free.fr/UNIX/48_R/09.html
+	# Found this trick at http://zoonek2.free.fr/UNIX/48_R/09.html
 	for(i in 1:bands)
 	{	# Orthogonal?
 		temp_princomp=princomp(cbind(inDataSet1_pifs[,i],inDataSet2_pifs[,i]))

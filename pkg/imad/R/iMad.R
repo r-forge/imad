@@ -15,10 +15,10 @@
 #' @param format Character. The output format of the rasters (see ?writeFormats).
 #' @param mask1 A Raster* object representing a mask to be used for inDataSet1.
 #' @param mask2 A Raster* object representing a mask to be used for inDataSet2.
-#' @param ... Passed to various raster functions. Important ones include format= and overwrite=TRUE/FALSE.
+#' @param ... Passed to various raster functions (see writeRaster). Important ones include format= and overwrite=TRUE/FALSE.  datatype should be left as 'FLT4S' for proper functioning.
 #' @return Returns a RasterStack object where the first layer is the chisquare image, and the subsequent layers are the iMad layers.
 #' @author Mort Canty (original code) and Jonathan A. Greenberg (R port).
-# @seealso 
+#' @seealso \code{\link[raster]{writeRaster}}
 # @keywords 
 #' @references
 #' \itemize{
@@ -71,7 +71,7 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 		# If the user does not want to reuse existing cropped datasets or if they don't exist...
 			overlaps=extract_overlap_rasters(inDataSet1,inDataSet2,
 					filename1=output_inDataSet1_subset_filename,filename2=output_inDataSet2_subset_filename,
-					verbose=verbose,format=format,...)
+					verbose=verbose,format=format,datatype='FLT4S',...)
 			inDataSet1=overlaps[[1]]
 			inDataSet2=overlaps[[2]]
 		} else

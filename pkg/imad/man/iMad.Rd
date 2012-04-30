@@ -46,8 +46,10 @@
   \item{mask2}{A Raster* object representing a mask to be
   used for inDataSet2.}
 
-  \item{...}{Passed to various raster functions. Important
-  ones include format= and overwrite=TRUE/FALSE.}
+  \item{...}{Passed to various raster functions (see
+  writeRaster). Important ones include format= and
+  overwrite=TRUE/FALSE.  datatype should be left as 'FLT4S'
+  for proper functioning.}
 }
 \value{
   Returns a RasterStack object where the first layer is the
@@ -71,5 +73,8 @@
   regularized iteratively reweighted MAD method for change
   detection in multi- and hyperspectral data. IEEE
   Transactions on Image Processing 16(2):463-478.} }
+}
+\seealso{
+  \code{\link[raster]{writeRaster}}
 }
 
