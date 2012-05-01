@@ -81,8 +81,10 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(!missing(pos))
 	{
 		if(verbose) { print("Subsetting bands...")}
-		inDataSet1=stack(inDataSet1,bands=pos)
-		inDataSet2=stack(inDataSet2,bands=pos)
+#		inDataSet1=stack(inDataSet1,bands=pos)
+#		inDataSet2=stack(inDataSet2,bands=pos)
+		inDataSet1=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=inDataSet1)))
+		inDataSet2=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=inDataSet2)))
 	}
 	
 	bands=nlayers(inDataSet1)
@@ -227,17 +229,17 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(cols != cols2 || rows != rows2) stop("Input rows and columns must be the same, try using auto_extract_overlap=TRUE...")
 	
 	wt = raster(inDataSet1,layer=1)*0+1
-
-	inDataSet1
-	inDataSet2
-	
+#
+#	inDataSet1
+#	inDataSet2
+#	
 	if(class(mask)!="logical")
 	{
 		if(verbose) { print("Masking...") }
-#		inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
-#		inDataSet2=mask(x=inDataset2,mask=mask,filename=output_inDataSet2_masked,...)
-		inDataSet1 <- inDataSet1*mask
-		inDataSet2 <- inDataSet2*mask
+		inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
+		inDataSet2=mask(x=inDataset2,mask=mask,filename=output_inDataSet2_masked,...)
+#		inDataSet1 <- inDataSet1*mask
+#		inDataSet2 <- inDataSet2*mask
 	}
 	dm = stack(inDataSet1,inDataSet2)
 	
