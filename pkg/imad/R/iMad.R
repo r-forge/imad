@@ -52,6 +52,8 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 	
 	# End pre-checks.
 	
+	if(verbose) { print("Verbose mode enabled...")}
+	
 	mask=NA
 	
 	# Extract overlap regions
@@ -92,14 +94,7 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 			print("Reusing the existing regions...")
 			inDataSet1=brick(output_inDataSet1_subset_full_filename)
 			inDataSet2=brick(output_inDataSet2_subset_full_filename)
-		}
-		
-		# Fix for extents that differ.  We should combine this with a col/row check.
-		if(force_extent)
-		{
-			extent(inDataSet2)=extent(inDataSet1)
-		}
-				
+		}		
 		
 		# Now crop the masks and add them together.
 		if(!missing(mask1) || !missing(mask2))
@@ -112,6 +107,7 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 						filename1=output_inDataSet1_subset_mask_filename,
 						raster2_crop=FALSE,
 						verbose=verbose,format=format,...)
+				mask1=mask1_overlap
 			}
 			
 			if(!missing(mask2))
@@ -122,38 +118,8 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 						filename2=output_inDataSet2_subset_mask_filename,
 						raster1_crop=FALSE,
 						verbose=verbose,format=format,...)
+				mask2=mask2_overlap
 			}
-			if(!missing(mask1) && !missing(mask2))
-			{
-				if(verbose) { print("Both masks present...") }
-				if(force_extent)
-				{
-					extent(mask1_overlap)=extent(inDataSet1)
-					extent(mask2_overlap)=extent(inDataSet1)
-				}
-				mask=mask1_overlap*mask2_overlap
-			} else
-			{
-				if(!missing(mask1))
-				{
-					if(verbose) { print("Mask #1 present...") }
-					if(force_extent)
-					{
-						extent(mask1_overlap)=extent(inDataSet1)
-					}
-					mask=mask1_overlap
-				} else
-				{
-					if(verbose) { print("Mask #2 present...") }
-					if(force_extent)
-					{
-						extent(mask2_overlap)=extent(inDataSet1)
-					}
-					mask=mask2_overlap
-				}
-			}
-			mask[mask==0] <- NA
-			
 		} else
 		{
 			mask=NA
@@ -161,9 +127,50 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 		
 	} else
 	{
+		if(verbose) { print("Not extracting the overlap region...") }
 		# Should check for overlap here...
-		
 	}
+	
+	# Fix for extents that differ.  We should combine this with a col/row check.
+	if(force_extent)
+	{
+		extent(inDataSet2)=extent(inDataSet1)
+#		extent(mask1)=extent(inDataSet1)
+#		extent(mask2)=extent(inDataSet1)
+	}
+	
+	# Set up masks
+	if(!missing(mask1) && !missing(mask2))
+	{
+		if(verbose) { print("Both masks present...") }
+		if(force_extent)
+		{
+			extent(mask1_overlap)=extent(inDataSet1)
+			extent(mask2_overlap)=extent(inDataSet1)
+		}
+		mask=mask1_overlap*mask2_overlap
+	} else
+	{
+		if(!missing(mask1))
+		{
+			if(verbose) { print("Mask #1 present...") }
+			if(force_extent)
+			{
+				extent(mask1_overlap)=extent(inDataSet1)
+			}
+			mask=mask1_overlap
+		} else
+		{
+			if(verbose) { print("Mask #2 present...") }
+			if(force_extent)
+			{
+				extent(mask2_overlap)=extent(inDataSet1)
+			}
+			mask=mask2_overlap
+		}
+		mask[mask==0] <- NA
+	}
+
 	
 	cols=ncol(inDataSet1)
 	rows=nrow(inDataSet1)
