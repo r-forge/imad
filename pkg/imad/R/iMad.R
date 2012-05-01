@@ -145,8 +145,8 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 		if(verbose) { print("Both masks present...") }
 		if(force_extent)
 		{
-			extent(mask1_overlap)=extent(inDataSet1)
-			extent(mask2_overlap)=extent(inDataSet1)
+			extent(mask1)=extent(inDataSet1)
+			extent(mask2)=extent(inDataSet1)
 		}
 		mask=mask1_overlap*mask2_overlap
 	} else
@@ -156,7 +156,7 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 			if(verbose) { print("Mask #1 present...") }
 			if(force_extent)
 			{
-				extent(mask1_overlap)=extent(inDataSet1)
+				extent(mask1)=extent(inDataSet1)
 			}
 			mask=mask1_overlap
 		} else
@@ -164,7 +164,7 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 			if(verbose) { print("Mask #2 present...") }
 			if(force_extent)
 			{
-				extent(mask2_overlap)=extent(inDataSet1)
+				extent(mask2)=extent(inDataSet1)
 			}
 			mask=mask2_overlap
 		}
