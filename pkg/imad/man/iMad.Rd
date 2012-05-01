@@ -6,7 +6,8 @@
     output_basename, verbose = FALSE,
     auto_extract_overlap = TRUE,
     reuse_existing_overlap = TRUE, corr_thresh = 0.001,
-    delta = 0.001, format = "raster", mask1, mask2, ...)
+    delta = 0.001, format = "raster", mask1, mask2,
+    force_extent = TRUE, ...)
 }
 \arguments{
   \item{inDataSet1}{A Raster* object of the first image.}
@@ -45,6 +46,9 @@
 
   \item{mask2}{A Raster* object representing a mask to be
   used for inDataSet2.}
+
+  \item{force_extent}{Logical. Attempt to force the input
+  files (and masks) to be the same extent?}
 
   \item{...}{Passed to various raster functions (see
   writeRaster). Important ones include format= and

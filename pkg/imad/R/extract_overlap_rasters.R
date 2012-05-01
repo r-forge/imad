@@ -36,11 +36,13 @@ extract_overlap_rasters <- function(raster1,raster2,filename1,filename2,raster1_
 	{
 		if(verbose) { print("Cropping raster1...") }
 		raster1_overlap=crop(raster1,overlap_extent,filename=filename1,...)
+		extent(raster1_overlap)=overlap_extent
 	}
 	if(raster2_crop)
 	{
 		if(verbose) { print("Cropping raster2...") }
 		raster2_overlap=crop(raster2,overlap_extent,filename=filename2,...)
+		extent(raster2_overlap)=overlap_extent
 	}
 	
 	if(raster1_crop && raster2_crop)

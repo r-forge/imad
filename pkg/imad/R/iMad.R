@@ -15,6 +15,7 @@
 #' @param format Character. The output format of the rasters (see ?writeFormats).
 #' @param mask1 A Raster* object representing a mask to be used for inDataSet1.
 #' @param mask2 A Raster* object representing a mask to be used for inDataSet2.
+#' @param force_extent Logical. Attempt to force the input files (and masks) to be the same extent?
 #' @param ... Passed to various raster functions (see writeRaster). Important ones include format= and overwrite=TRUE/FALSE.  datatype should be left as 'FLT4S' for proper functioning.
 #' @return Returns a RasterStack object where the first layer is the chisquare image, and the subsequent layers are the iMad layers.
 #' @author Mort Canty (original code) and Jonathan A. Greenberg (R port).
@@ -42,7 +43,7 @@
 iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose=FALSE,
 		auto_extract_overlap=TRUE,reuse_existing_overlap=TRUE,
 		corr_thresh=0.001,delta=0.001,format="raster",
-		mask1,mask2,
+		mask1,mask2,force_extent=TRUE,
 		...)
 {
 	require("raster")		
@@ -84,6 +85,7 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 					verbose=verbose,format=format,datatype='FLT4S',...)
 			inDataSet1=overlaps[[1]]
 			inDataSet2=overlaps[[2]]
+
 		} else
 		{
 		# Otherwise use the existing cropped datasets.
@@ -91,6 +93,13 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 			inDataSet1=brick(output_inDataSet1_subset_full_filename)
 			inDataSet2=brick(output_inDataSet2_subset_full_filename)
 		}
+		
+		# Fix for extents that differ.  We should combine this with a col/row check.
+		if(force_extent)
+		{
+			extent(inDataSet2)=extent(inDataSet1)
+		}
+				
 		
 		# Now crop the masks and add them together.
 		if(!missing(mask1) || !missing(mask2))
@@ -116,15 +125,28 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 			}
 			if(!missing(mask1) && !missing(mask2))
 			{
+				if(force_extent)
+				{
+					extent(mask1_overlap)=extent(inDataSet1)
+					extent(mask2_overlap)=extent(inDataSet1)
+				}
 				mask=mask1_overlap*mask2_overlap
 			} else
 			{
 				if(!missing(mask1))
 				{
 					mask=mask1_overlap
+					if(force_extent)
+					{
+						extent(mask1_overlap)=extent(inDataSet1)
+					}
 				} else
 				{
 					mask=mask2_overlap
+					if(force_extent)
+					{
+						extent(mask2_overlap)=extent(inDataSet1)
+					}
 				}
 			}
 			mask[mask==0] <- NA
