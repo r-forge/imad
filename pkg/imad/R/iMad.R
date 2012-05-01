@@ -237,7 +237,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	{
 		if(verbose) { print("Masking...") }
 		inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
-		inDataSet2=mask(x=inDataset2,mask=mask,filename=output_inDataSet2_masked,...)
+		inDataSet2=mask(x=inDataSet2,mask=mask,filename=output_inDataSet2_masked,...)
 #		inDataSet1 <- inDataSet1*mask
 #		inDataSet2 <- inDataSet2*mask
 	}
