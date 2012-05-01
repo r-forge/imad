@@ -2,50 +2,56 @@
 \alias{iMad}
 \title{iMad (optimized port)}
 \usage{
-  iMad(inDataSet1, inDataSet2, maxiter = 100, lam = 0,
-    output_basename, verbose = FALSE,
-    auto_extract_overlap = TRUE,
-    reuse_existing_overlap = TRUE, corr_thresh = 0.001,
-    delta = 0.001, format = "raster", mask1, mask2,
-    force_extent = TRUE, ...)
+  iMad(inDataSet1, inDataSet2, pos, mask1, mask2,
+    mask1_band = 1, mask2_band = 1, output_basename,
+    maxiter = 100, lam = 0, delta = 0.001,
+    corr_thresh = 0.001, auto_extract_overlap = TRUE,
+    reuse_existing_overlap = TRUE, force_extent = TRUE,
+    verbose = FALSE, ...)
 }
 \arguments{
   \item{inDataSet1}{A Raster* object of the first image.}
 
   \item{inDataSet2}{A Raster* object of the second image.}
 
-  \item{maxiter}{Numeric (>= 1). The maximum number of
-  iterations.}
+  \item{pos}{Integer vector.  A vector of bands to use from
+  each image.  Default is use all bands.}
 
-  \item{lam}{Numeric. The penalization function.  CURRENTLY
-  UNSUPPORTED.}
+  \item{mask1}{(Optional) A Raster* object representing a
+  mask to be used for inDataSet1 or a numeric value to be
+  used as the mask value.}
+
+  \item{mask2}{(Optional) A Raster* object representing a
+  mask to be used for inDataSet2 or a numeric value to be
+  used as the mask value.}
+
+  \item{mask1_band}{(Optional) The band from inDataSet1 to
+  use for masking (only if class(mask1)=="numeric").}
+
+  \item{mask2_band}{(Optional) The band from inDataSet2 to
+  use for masking (only if class(mask1)=="numeric").}
 
   \item{output_basename}{Character. The basename (including
   path) for the output files.}
 
-  \item{verbose}{Logical. Print out debugging information?}
+  \item{maxiter}{Numeric (>= 1). The maximum number of
+  iterations.  Default is 100.}
+
+  \item{lam}{Numeric. The penalization function.  CURRENTLY
+  UNSUPPORTED.}
+
+  \item{corr_thresh}{Numeric. Used for situations where the
+  canonical correlates are all nearly 1.0 (how close to 1.0
+  does it need to be to stop).}
+
+  \item{delta}{Numeric. The smallest change in canonical
+  correlates to end the program.}
 
   \item{auto_extract_overlap}{Logical. Extract the overlap
   zones between the images?}
 
   \item{reuse_existing_overlap}{Logical. If the algorithm
   detects pre-create overlaps, use them?}
-
-  \item{delta}{Numeric. The smallest change in canonical
-  correlates to end the program.}
-
-  \item{corr_thresh}{Numeric. Used for situations where the
-  canonical correlates are all nearly 1.0 (how close to 1.0
-  does it need to be to stop).}
-
-  \item{format}{Character. The output format of the rasters
-  (see ?writeFormats).}
-
-  \item{mask1}{A Raster* object representing a mask to be
-  used for inDataSet1.}
-
-  \item{mask2}{A Raster* object representing a mask to be
-  used for inDataSet2.}
 
   \item{force_extent}{Logical. Attempt to force the input
   files (and masks) to be the same extent?}
@@ -54,6 +60,8 @@
   writeRaster). Important ones include format= and
   overwrite=TRUE/FALSE.  datatype should be left as 'FLT4S'
   for proper functioning.}
+
+  \item{verbose}{Logical. Print out debugging information?}
 }
 \value{
   Returns a RasterStack object where the first layer is the

@@ -4,19 +4,22 @@
 #' 
 #' @param inDataSet1 A Raster* object of the first image.
 #' @param inDataSet2 A Raster* object of the second image.
-#' @param maxiter Numeric (>= 1). The maximum number of iterations.
-#' @param lam Numeric. The penalization function.  CURRENTLY UNSUPPORTED.
+#' @param pos Integer vector.  A vector of bands to use from each image.  Default is use all bands.
+#' @param mask1 (Optional) A Raster* object representing a mask to be used for inDataSet1 or a numeric value to be used as the mask value.
+#' @param mask2 (Optional) A Raster* object representing a mask to be used for inDataSet2 or a numeric value to be used as the mask value.
+#' @param mask1_band (Optional) The band from inDataSet1 to use for masking (only if class(mask1)=="numeric").
+#' @param mask2_band (Optional) The band from inDataSet2 to use for masking (only if class(mask1)=="numeric").
 #' @param output_basename Character. The basename (including path) for the output files.
-#' @param verbose Logical. Print out debugging information?
+# @param format Character. The output format of the rasters (see ?writeFormats).  Default is "raster".
+#' @param maxiter Numeric (>= 1). The maximum number of iterations.  Default is 100.
+#' @param lam Numeric. The penalization function.  CURRENTLY UNSUPPORTED.
+#' @param corr_thresh Numeric. Used for situations where the canonical correlates are all nearly 1.0 (how close to 1.0 does it need to be to stop). 
+#' @param delta Numeric. The smallest change in canonical correlates to end the program.
 #' @param auto_extract_overlap Logical. Extract the overlap zones between the images?
 #' @param reuse_existing_overlap Logical. If the algorithm detects pre-create overlaps, use them?
-#' @param delta Numeric. The smallest change in canonical correlates to end the program.
-#' @param corr_thresh Numeric. Used for situations where the canonical correlates are all nearly 1.0 (how close to 1.0 does it need to be to stop). 
-#' @param format Character. The output format of the rasters (see ?writeFormats).
-#' @param mask1 A Raster* object representing a mask to be used for inDataSet1.
-#' @param mask2 A Raster* object representing a mask to be used for inDataSet2.
 #' @param force_extent Logical. Attempt to force the input files (and masks) to be the same extent?
 #' @param ... Passed to various raster functions (see writeRaster). Important ones include format= and overwrite=TRUE/FALSE.  datatype should be left as 'FLT4S' for proper functioning.
+#' @param verbose Logical. Print out debugging information?
 #' @return Returns a RasterStack object where the first layer is the chisquare image, and the subsequent layers are the iMad layers.
 #' @author Mort Canty (original code) and Jonathan A. Greenberg (R port).
 #' @seealso \code{\link[raster]{writeRaster}}
@@ -39,29 +42,57 @@
 # TODO: use layerStats instead of cov.wt.raster
 # TODO: allow mask to be a single value
 # TODO: subset bands
+# TODO: save the mask step.
 
-iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose=FALSE,
-		auto_extract_overlap=TRUE,reuse_existing_overlap=TRUE,
-		corr_thresh=0.001,delta=0.001,format="raster",
-		mask1,mask2,force_extent=TRUE,
+iMad <- function(inDataSet1,inDataSet2,pos,
+		mask1,mask2,mask1_band=1,mask2_band=1,
+		output_basename,# format="raster",
+		maxiter=100,lam=0,delta=0.001,corr_thresh=0.001,
+		auto_extract_overlap=TRUE,reuse_existing_overlap=TRUE,force_extent=TRUE,
+		verbose=FALSE,
 		...)
 {
 	require("raster")		
-	
-	# Do some pre-checks up here.
-	
-	# End pre-checks.
-	
 	if(verbose) { print("Verbose mode enabled...")}
 	
-	mask=NA
+	# Do some pre-checks up here.
+	if(verbose) { print("Initial checks...")}
+	if(!inherits(inDataSet1,'Raster')) stop ("inDataSet1 must be a Raster* object...")
+	if(!inherits(inDataSet2,'Raster')) stop ("inDataSet2 must be a Raster* object...")
+	if(maxiter < 1) stop ("maxiter must be greater than 0...")
+	if(missing(output_basename)) stop ("output_basename must be set...")
+	
+	# End pre-checks.
+
+	# Setup output filenames.
+	output_inDataSet1_subset_filename=paste(output_basename,"_inDataSet1_overlap",sep="")
+	output_inDataSet2_subset_filename=paste(output_basename,"_inDataSet2_overlap",sep="")
+	output_inDataSet1_subset_mask_filename=paste(output_basename,"_inDataSet1_mask_overlap",sep="")
+	output_inDataSet2_subset_mask_filename=paste(output_basename,"_inDataSet2_mask_overlap",sep="")
+	output_inDataSet1_masked=paste(output_basename,"_inDataSet1_masked",sep="")
+	output_inDataSet2_masked=paste(output_basename,"_inDataSet2_masked",sep="")
+	
+	
+	output_MAD_filename=paste(output_basename,"_iMAD",sep="")
+	output_chisqr_filename=paste(output_basename,"_iMAD_chisqr",sep="")
+	
+	
+	# Subset out bands if needed.
+	if(!missing(bands))
+	{
+		if(verbose) { print("Subsetting bands...")}
+		inDataSet1=stack(inDataSet1,bands=bands)
+		inDataSet2=stack(inDataSet2,bands=bands)
+	}
+	
+	bands=nlayers(inDataSet1)
+	pos=0:(bands-1)
 	
 	# Extract overlap regions
 	if(auto_extract_overlap)
 	{
 		if(verbose) { print("Extracting the overlap region...") }
-		output_inDataSet1_subset_filename=paste(output_basename,"_inDataSet1_overlap")
-		output_inDataSet2_subset_filename=paste(output_basename,"_inDataSet2_overlap")
+
 		# Not working yet, needs to check for the the filename + extension.
 		
 		if(missing(format))
@@ -102,7 +133,6 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 			if(!missing(mask1))
 			{
 				if(verbose) { print("Cropping mask1...") }
-				output_inDataSet1_subset_mask_filename=paste(output_basename,"_inDataSet1_mask_overlap")
 				mask1_overlap=extract_overlap_rasters(mask1,inDataSet2,
 						filename1=output_inDataSet1_subset_mask_filename,
 						raster2_crop=FALSE,
@@ -113,7 +143,6 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 			if(!missing(mask2))
 			{
 				if(verbose) { print("Cropping mask2...") }
-				output_inDataSet2_subset_mask_filename=paste(output_basename,"_inDataSet2_mask_overlap")
 				mask2_overlap=extract_overlap_rasters(inDataSet1,mask2,
 						filename2=output_inDataSet2_subset_mask_filename,
 						raster1_crop=FALSE,
@@ -135,11 +164,27 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 	if(force_extent)
 	{
 		extent(inDataSet2)=extent(inDataSet1)
-#		extent(mask1)=extent(inDataSet1)
-#		extent(mask2)=extent(inDataSet1)
 	}
 	
 	# Set up masks
+	mask=NA
+	# Check for numeric masks
+	if(!missing(mask1))
+	{
+		if(class(mask1)=="numeric")
+		{
+			mask1=raster(inDataSet1,layer=mask1_band) != 0
+		}
+	}
+	
+	if(!missing(mask2))
+	{
+		if(class(mask2)=="numeric")
+		{
+			mask2=raster(inDataSet2,layer=mask1_band) != 0
+		}
+	}
+	
 	if(!missing(mask1) && !missing(mask2))
 	{
 		if(verbose) { print("Both masks present...") }
@@ -171,7 +216,6 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 		mask[mask==0] <- NA
 	}
 
-	
 	cols=ncol(inDataSet1)
 	rows=nrow(inDataSet1)
 	
@@ -180,17 +224,15 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 	
 	if(cols != cols2 || rows != rows2) stop("Input rows and columns must be the same, try using auto_extract_overlap=TRUE...")
 	
-	bands=nlayers(inDataSet1)
-	pos=0:(bands-1)
-	
 	wt = raster(inDataSet1,layer=1)*0+1
 
 	if(class(mask)!="logical")
 	{
 		if(verbose) { print("Masking...") }
-#		dm <- dm*mask
-		inDataSet1 <- inDataSet1*mask
-		inDataSet2 <- inDataSet2*mask
+		inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
+		inDataSet2=mask(x=inDataset2,mask=mask,filename=output_inDataSet2_masked,...)
+#		inDataSet1 <- inDataSet1*mask
+#		inDataSet2 <- inDataSet2*mask
 	}
 	dm = stack(inDataSet1,inDataSet2)
 	
@@ -352,10 +394,6 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 	}
 	
 	# Output results
-	
-	output_MAD_filename=paste(output_basename,"_iMAD")
-	output_chisqr_filename=paste(output_basename,"_iMAD_chisqr")
-	
 	MAD_brick=writeRaster(MAD,filename=output_MAD_filename,format=format,...)
 	chisqr_raster=writeRaster(chisqr,filename=output_chisqr_filename,format=format,...)
 	
