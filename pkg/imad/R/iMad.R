@@ -173,6 +173,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	{
 		if(class(mask1)=="numeric")
 		{
+			if(verbose) { print("Creating mask1...") }
 			mask1=raster(inDataSet1,layer=mask1_band) != 0
 		}
 	}
@@ -181,6 +182,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	{
 		if(class(mask2)=="numeric")
 		{
+			if(verbose) { print("Creating mask2...") }
 			mask2=raster(inDataSet2,layer=mask1_band) != 0
 		}
 	}
@@ -226,13 +228,16 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	
 	wt = raster(inDataSet1,layer=1)*0+1
 
+	inDataSet1
+	inDataSet2
+	
 	if(class(mask)!="logical")
 	{
 		if(verbose) { print("Masking...") }
-		inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
-		inDataSet2=mask(x=inDataset2,mask=mask,filename=output_inDataSet2_masked,...)
-#		inDataSet1 <- inDataSet1*mask
-#		inDataSet2 <- inDataSet2*mask
+#		inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
+#		inDataSet2=mask(x=inDataset2,mask=mask,filename=output_inDataSet2_masked,...)
+		inDataSet1 <- inDataSet1*mask
+		inDataSet2 <- inDataSet2*mask
 	}
 	dm = stack(inDataSet1,inDataSet2)
 	
