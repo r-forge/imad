@@ -184,16 +184,15 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 	pos=0:(bands-1)
 	
 	wt = raster(inDataSet1,layer=1)*0+1
-	dm = stack(inDataSet1,inDataSet2)
-	
+
 	if(class(mask)!="logical")
 	{
-		print("Masking...")
-#		print(mask)
-		dm <- dm*mask
+		if(verbose) { print("Masking...") }
+#		dm <- dm*mask
 		inDataSet1 <- inDataSet1*mask
 		inDataSet2 <- inDataSet2*mask
 	}
+	dm = stack(inDataSet1,inDataSet2)
 	
 	delta = 1.0
 	oldrho = array(data=0,dim=bands)
