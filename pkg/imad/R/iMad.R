@@ -81,8 +81,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(!missing(pos))
 	{
 		if(verbose) { print("Subsetting bands...")}
-		inDataSet1=stack(inDataSet1,bands=bands)
-		inDataSet2=stack(inDataSet2,bands=bands)
+		inDataSet1=stack(inDataSet1,bands=pos)
+		inDataSet2=stack(inDataSet2,bands=pos)
 	}
 	
 	bands=nlayers(inDataSet1)
