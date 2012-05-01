@@ -10,13 +10,13 @@
 #' @param mask1_band (Optional) The band from inDataSet1 to use for masking (only if class(mask1)=="numeric").
 #' @param mask2_band (Optional) The band from inDataSet2 to use for masking (only if class(mask1)=="numeric").
 #' @param output_basename Character. The basename (including path) for the output files.
-# @param format Character. The output format of the rasters (see ?writeFormats).  Default is "raster".
+#' @param format Character. The output format of the rasters (see ?writeFormats).  Default is "raster".
 #' @param maxiter Numeric (>= 1). The maximum number of iterations.  Default is 100.
 #' @param lam Numeric. The penalization function.  CURRENTLY UNSUPPORTED.
 #' @param corr_thresh Numeric. Used for situations where the canonical correlates are all nearly 1.0 (how close to 1.0 does it need to be to stop). 
 #' @param delta Numeric. The smallest change in canonical correlates to end the program.
 #' @param auto_extract_overlap Logical. Extract the overlap zones between the images?
-#' @param reuse_existing_overlap Logical. If the algorithm detects pre-create overlaps, use them?
+#' @param reuse_existing_raster Logical. If the algorithm detects pre-create overlaps, use them?
 #' @param force_extent Logical. Attempt to force the input files (and masks) to be the same extent?
 #' @param ... Passed to various raster functions (see writeRaster). Important ones include format= and overwrite=TRUE/FALSE.  datatype should be left as 'FLT4S' for proper functioning.
 #' @param verbose Logical. Print out debugging information?
@@ -46,9 +46,9 @@
 
 iMad <- function(inDataSet1,inDataSet2,pos,
 		mask1,mask2,mask1_band=1,mask2_band=1,
-		output_basename,# format="raster",
+		output_basename, format="raster",
 		maxiter=100,lam=0,delta=0.001,corr_thresh=0.001,
-		auto_extract_overlap=TRUE,reuse_existing_overlap=TRUE,force_extent=TRUE,
+		auto_extract_overlap=TRUE,reuse_existing_raster=TRUE,force_extent=TRUE,
 		verbose=FALSE,
 		...)
 {
@@ -108,7 +108,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		output_inDataSet1_subset_full_filename <- raster:::.getExtension(output_inDataSet1_subset_filename, output_inDataSet1_subset_full_filetype)
 		output_inDataSet2_subset_full_filename <- raster:::.getExtension(output_inDataSet2_subset_filename, output_inDataSet2_subset_full_filetype)
 		
-		if(!reuse_existing_overlap || 
+		if(!reuse_existing_raster || 
 				!file.exists(output_inDataSet1_subset_full_filename) || !file.exists(output_inDataSet2_subset_full_filename))
 		{
 		# If the user does not want to reuse existing cropped datasets or if they don't exist...
@@ -236,8 +236,22 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(class(mask)!="logical")
 	{
 		if(verbose) { print("Masking...") }
-		inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
-		inDataSet2=mask(x=inDataSet2,mask=mask,filename=output_inDataSet2_masked,...)
+		if(file.exists(build_raster_filename(output_inDataSet1_masked,format=format)) && reuse_existing_raster)
+		{
+			inDataSet1=brick(build_raster_filename(output_inDataSet1_masked,format=format))
+		} else
+		{
+			inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
+		}
+
+		if(file.exists(build_raster_filename(output_inDataSet2_masked,format=format)) && reuse_existing_raster)
+		{
+			inDataSet2=brick(build_raster_filename(output_inDataSet2_masked,format=format))
+		} else
+		{
+			inDataSet2=mask(x=inDataSet2,mask=mask,filename=output_inDataSet2_masked,...)
+		}
+
 #		inDataSet1 <- inDataSet1*mask
 #		inDataSet2 <- inDataSet2*mask
 	}

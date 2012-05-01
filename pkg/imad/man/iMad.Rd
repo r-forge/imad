@@ -4,9 +4,10 @@
 \usage{
   iMad(inDataSet1, inDataSet2, pos, mask1, mask2,
     mask1_band = 1, mask2_band = 1, output_basename,
-    maxiter = 100, lam = 0, delta = 0.001,
-    corr_thresh = 0.001, auto_extract_overlap = TRUE,
-    reuse_existing_overlap = TRUE, force_extent = TRUE,
+    format = "raster", maxiter = 100, lam = 0,
+    delta = 0.001, corr_thresh = 0.001,
+    auto_extract_overlap = TRUE,
+    reuse_existing_raster = TRUE, force_extent = TRUE,
     verbose = FALSE, ...)
 }
 \arguments{
@@ -34,6 +35,9 @@
   \item{output_basename}{Character. The basename (including
   path) for the output files.}
 
+  \item{format}{Character. The output format of the rasters
+  (see ?writeFormats).  Default is "raster".}
+
   \item{maxiter}{Numeric (>= 1). The maximum number of
   iterations.  Default is 100.}
 
@@ -50,7 +54,7 @@
   \item{auto_extract_overlap}{Logical. Extract the overlap
   zones between the images?}
 
-  \item{reuse_existing_overlap}{Logical. If the algorithm
+  \item{reuse_existing_raster}{Logical. If the algorithm
   detects pre-create overlaps, use them?}
 
   \item{force_extent}{Logical. Attempt to force the input
