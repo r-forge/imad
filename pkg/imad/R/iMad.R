@@ -35,6 +35,9 @@
 # TODO: integrate penalization function for hyperspectral imagery.
 # TODO: write out full mask and check for existing masks.
 # TODO: give the output stack names
+# TODO: use layerStats instead of cov.wt.raster
+# TODO: allow mask to be a single value
+# TODO: subset bands
 
 iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose=FALSE,
 		auto_extract_overlap=TRUE,reuse_existing_overlap=TRUE,
@@ -43,6 +46,10 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 		...)
 {
 	require("raster")		
+	
+	# Do some pre-checks up here.
+	
+	# End pre-checks.
 	
 	mask=NA
 	
@@ -69,6 +76,9 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 				!file.exists(output_inDataSet1_subset_full_filename) || !file.exists(output_inDataSet2_subset_full_filename))
 		{
 		# If the user does not want to reuse existing cropped datasets or if they don't exist...
+			# First check to see if they line up...
+		
+			# If not, run the extraction...
 			overlaps=extract_overlap_rasters(inDataSet1,inDataSet2,
 					filename1=output_inDataSet1_subset_filename,filename2=output_inDataSet2_subset_filename,
 					verbose=verbose,format=format,datatype='FLT4S',...)
@@ -159,7 +169,7 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 	ab_nan=FALSE
 
 # Mods to include the penalization function.  Comment this out if this chokes.
-#	Omega_L = diag(bands)
+	if(lam>0) { Omega_L = diag(bands) }
 	
 	while(delta > 0.001 && iter < maxiter && !(ab_nan))
 	{
@@ -168,6 +178,7 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 			print(paste("Iteration:",iter))
 		}
 		
+		# This needs to be swapped with "layerStats" in raster
 		sigma_means=cov.wt.raster(dm,wt)
 		
 		sigma=sigma_means[[1]]
@@ -188,8 +199,13 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 			s21 = sigma[(bands+1):(2*bands),1:(bands)]
 			
 			# Mods to include the penalization function.  Comment this out if this chokes.
-	#		s11 = (1-lam)*S11 + lam*Omega_L
-	#		s22 = (1-lam)*S22 + lam*Omega_L
+		#		s11 = (1-lam)*S11 + lam*Omega_L
+		#		s22 = (1-lam)*S22 + lam*Omega_L
+#			if(lam>0) {
+#				s11 = (1-lam)*S11 + lam*Omega_L
+#				s22 = (1-lam)*S22 + lam*Omega_L
+#			}
+
 				
 			lama_a=Rdggev(JOBVL=F,JOBVR=T,A=s12%*%solve(s22)%*%s21,B=s11)
 			a=lama_a$VR
@@ -198,7 +214,8 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 			lamb_b=Rdggev(JOBVL=F,JOBVR=T,A=s21%*%solve(s11)%*%s12,B=s22)
 			b=lamb_b$VR
 			lamb=lamb_b$GENEIGENVALUES
-				
+	
+			# Eigenvalues, ranked largest to smallest
 			idx=rank(lama)
 			a=a[,idx]
 				
@@ -207,13 +224,28 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 	
 	# Penalization stuff needs to go somewhere around here
 	# IDL Code:
-	# mu = sqrt(mu2)  
-	# a2=diag_matrix(transpose(A)##A)
-	# b2=diag_matrix(transpose(B)##B) 
-	# sigma = sqrt( (2-lam*(a2+b2))/(1-lam)-2*mu )
-	# rho=mu*(1-lam)/sqrt( (1-lam*a2)*(1-lam*b2) )  
+	
+	
+	#
+	#; stopping criterion
+	#delta = max(abs(rho-old_rho))
+	#old_rho = rho
+	#
+	#; ensure sum of positive correlations between X and U is positive
+	#; their covariance matrix is S11##A
+	#invsig_x = diag_matrix(1/sqrt(diag_matrix(S11)))
+	#sum = total(invsig_x##S11##A,2)
+	#				A = A##diag_matrix(sum/abs(sum))   
+	#
+	#; ensure positive correlation between each pair of canonical variates
+	#cov = diag_matrix(transpose(A)##S12##B)
+	#B = B##diag_matrix(cov/abs(cov))
+	#
+	#if iter gt 0 and iter eq niter then goto, done 
 			
+			#mu = sqrt(mu2)  
 			rho=sqrt(lamb[idx])	
+#			mu=rho
 			
 			# Fix for near-perfect correlations
 			if(abs(sum(rho)-bands) < corr_thresh*bands)
@@ -223,6 +255,21 @@ iMad <- function(inDataSet1,inDataSet2,maxiter=100,lam=0,output_basename,verbose
 			} else
 			{
 				# normalize dispersions   
+	
+	#a2=diag_matrix(transpose(A)##A)
+#				a2=diag(t(a)%*%a)
+#				b2=diag(t(b)%*%b)
+#				sigma2=sqrt((2-lam*(a2*b2))/(1-lam-2*mu))
+#				rho=mu*(1-lam)/sqrt((1-lam*a2)*(1-lam*b2))
+#				sigMads
+	#b2=diag_matrix(transpose(B)##B) 
+	#sigma = sqrt( (2-lam*(a2+b2))/(1-lam)-2*mu )
+	#rho=mu*(1-lam)/sqrt( (1-lam*a2)*(1-lam*b2) )     
+	#
+	#sigMads = ones##sigma 
+	#means1  = ones##means[0:num_bands-1]
+	#means2  = ones##means[num_bands:*]
+	
 				tmp1=t(a)%*%s11%*%a
 				tmp2=1/(sqrt(diag(tmp1)))
 				tmp3=t(array(tmp2,c(bands,length(tmp2))))
