@@ -78,7 +78,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	
 	
 	# Subset out bands if needed.
-	if(!missing(bands))
+	if(!missing(pos))
 	{
 		if(verbose) { print("Subsetting bands...")}
 		inDataSet1=stack(inDataSet1,bands=bands)
