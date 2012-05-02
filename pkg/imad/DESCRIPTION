@@ -14,7 +14,6 @@ Description: Performs iMAD and related functions on multi- and hyperspectral
 License: GPL (>=2)
 URL: http://imad.r-forge.r-project.org/
 Collate:
-    'cov.wt.raster.R'
     'extract_overlap_rasters.R'
     'iMad.R'
     'Rdggev.R'

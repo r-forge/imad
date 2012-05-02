@@ -76,7 +76,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	output_MAD_filename=paste(output_basename,"_iMAD",sep="")
 	output_chisqr_filename=paste(output_basename,"_iMAD_chisqr",sep="")
 	
-	
 	# Subset out bands if needed.
 	if(!missing(pos))
 	{
@@ -279,7 +278,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 
 		sigma_means=layerStats(dm,'weighted.cov',wt,na.rm=TRUE)
 			
-		
 		sigma=sigma_means[[1]]
 		means=sigma_means[[2]]
 		

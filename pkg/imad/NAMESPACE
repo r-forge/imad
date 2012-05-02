@@ -1,5 +1,4 @@
 export(build_raster_filename)
-export(cov.wt.raster)
 export(extract_overlap_rasters)
 export(iMad)
 export(RADCAL)
