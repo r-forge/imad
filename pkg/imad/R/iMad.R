@@ -18,8 +18,10 @@
 #' @param auto_extract_overlap Logical. Extract the overlap zones between the images?
 #' @param reuse_existing_raster Logical. If the algorithm detects pre-create overlaps, use them?
 #' @param force_extent Logical. Attempt to force the input files (and masks) to be the same extent?
-#' @param ... Passed to various raster functions (see writeRaster). Important ones include format= and overwrite=TRUE/FALSE.  datatype should be left as 'FLT4S' for proper functioning.
+#' @param use_clusterR Logical. Use clusterR to (potentially) speed up calculations on a cluster? Default=FALSE.
+#' @param cl Cluster.  If not assigned, the program will attempt to figure it out.
 #' @param verbose Logical. Print out debugging information?
+#' @param ... Passed to various raster functions (see writeRaster). Important ones include format= and overwrite=TRUE/FALSE.  datatype should be left as 'FLT4S' for proper functioning.
 #' @return Returns a RasterStack object where the first layer is the chisquare image, and the subsequent layers are the iMad layers.
 #' @author Mort Canty (original code) and Jonathan A. Greenberg (R port).
 #' @seealso \code{\link[raster]{writeRaster}}
@@ -49,6 +51,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		output_basename, format="raster",
 		maxiter=100,lam=0,delta=0.001,corr_thresh=0.001,
 		auto_extract_overlap=TRUE,reuse_existing_raster=TRUE,force_extent=TRUE,
+		use_clusterR=FALSE,cl=NULL,
 		verbose=FALSE,
 		...)
 {
@@ -393,11 +396,33 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					#     canonical and MAD variates
 					if(verbose) { print("Calculating canonical and MAD variates...")}
 					means_a=means[1:bands]
-					U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
+					# Experimental clusterR
+					if(use_clusterR)
+					{
+						U=clusterR(x=inDataSet1,fun=function(x,a,means_a) { as.vector(t(a)%*%(x-means_a)) }, 
+								args=list(a=a,means_a=means_a) )
+					} else
+					{
+						U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
+					}
+					
 					means_b=means[(bands+1):(bands*2)]
-					V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
-					MAD = U-V
-						
+					if(use_clusterR)
+					{
+						V=clusterR(x=inDataSet2,fun=function(x,b,means_b) { as.vector(t(b)%*%(x-means_b)) }, 
+								args=list(a=a,means_a=means_a) )
+					} else
+					{
+						V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
+					}
+					
+#					if(use_clusterR)
+#					{
+#						MAD = clusterR(U,fun(U,V) { U-V },args=list(V))
+#					} else
+#					{
+						MAD = U-V
+#					}	
 					#     new weights	
 					if(verbose) { print("Generating new weights...")}
 					var_mad=t(2*(1-rho))

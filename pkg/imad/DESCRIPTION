@@ -4,7 +4,7 @@ Title: Iteratively Re-weighted Multivariate Alteration Detection (iMAD)
 Version: 0.3
 Date: 1-May-2012
 Depends:
-    raster,
+    raster (>= 1.9-91),
     R (>= 2.11.0)
 Author: Mort Canty (original version) & Jonathan A. Greenberg (R port) & Carlos
     Ramirez

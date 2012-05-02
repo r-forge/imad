@@ -8,7 +8,7 @@
     delta = 0.001, corr_thresh = 0.001,
     auto_extract_overlap = TRUE,
     reuse_existing_raster = TRUE, force_extent = TRUE,
-    verbose = FALSE, ...)
+    use_clusterR = FALSE, cl = NULL, verbose = FALSE, ...)
 }
 \arguments{
   \item{inDataSet1}{A Raster* object of the first image.}
@@ -60,12 +60,19 @@
   \item{force_extent}{Logical. Attempt to force the input
   files (and masks) to be the same extent?}
 
+  \item{use_clusterR}{Logical. Use clusterR to
+  (potentially) speed up calculations on a cluster?
+  Default=FALSE.}
+
+  \item{cl}{Cluster.  If not assigned, the program will
+  attempt to figure it out.}
+
+  \item{verbose}{Logical. Print out debugging information?}
+
   \item{...}{Passed to various raster functions (see
   writeRaster). Important ones include format= and
   overwrite=TRUE/FALSE.  datatype should be left as 'FLT4S'
   for proper functioning.}
-
-  \item{verbose}{Logical. Print out debugging information?}
 }
 \value{
   Returns a RasterStack object where the first layer is the
