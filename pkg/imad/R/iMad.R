@@ -228,11 +228,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	
 	if(cols != cols2 || rows != rows2) stop("Input rows and columns must be the same, try using auto_extract_overlap=TRUE...")
 	
-
-#
-#	inDataSet1
-#	inDataSet2
-#	
 	if(class(mask)!="logical")
 	{
 		if(verbose) { print("Masking...") }
@@ -268,7 +263,9 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 
 # Mods to include the penalization function.  Comment this out if this chokes.
 	if(lam>0) { Omega_L = diag(bands) }
+
 	
+### MAIN LOOP
 	while(delta > 0.001 && iter < maxiter && !(ab_nan))
 	{
 		if(verbose)
@@ -278,7 +275,10 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		
 		# This needs to be swapped with "layerStats" in raster
 		if(verbose) { print("Calculating weighted covariance and means...")}
-		sigma_means=cov.wt.raster(dm,wt)
+#		sigma_means=cov.wt.raster(dm,wt)
+
+		sigma_means=layerStats(dm,'weighted.cov',wt,na.rm=TRUE)
+			
 		
 		sigma=sigma_means[[1]]
 		means=sigma_means[[2]]
