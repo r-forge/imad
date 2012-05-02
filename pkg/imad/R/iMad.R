@@ -228,7 +228,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	
 	if(cols != cols2 || rows != rows2) stop("Input rows and columns must be the same, try using auto_extract_overlap=TRUE...")
 	
-	wt = raster(inDataSet1,layer=1)*0+1
+
 #
 #	inDataSet1
 #	inDataSet2
@@ -255,6 +255,10 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 #		inDataSet1 <- inDataSet1*mask
 #		inDataSet2 <- inDataSet2*mask
 	}
+	
+	if(verbose) { print("Creating initial weighting raster and stacking inDataSets...")}
+	wt = raster(inDataSet1,layer=1)*0+1
+	
 	dm = stack(inDataSet1,inDataSet2)
 	
 	delta = 1.0
@@ -273,6 +277,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		}
 		
 		# This needs to be swapped with "layerStats" in raster
+		if(verbose) { print("Calculating weighted covariance and means...")}
 		sigma_means=cov.wt.raster(dm,wt)
 		
 		sigma=sigma_means[[1]]
@@ -300,7 +305,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 #				s22 = (1-lam)*S22 + lam*Omega_L
 #			}
 
-				
+			if(verbose) { print("Calculating generalized eigenvalues and eigenvectors...")}		
 			lama_a=Rdggev(JOBVL=F,JOBVR=T,A=s12%*%solve(s22)%*%s21,B=s11)
 			a=lama_a$VR
 				lama=lama_a$GENEIGENVALUES
@@ -388,6 +393,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 				} else
 				{
 					#     canonical and MAD variates
+					if(verbose) { print("Calculating canonical and MAD variates...")}
 					means_a=means[1:bands]
 					U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
 					means_b=means[(bands+1):(bands*2)]
@@ -395,6 +401,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					MAD = U-V
 						
 					#     new weights	
+					if(verbose) { print("Generating new weights...")}
 					var_mad=t(2*(1-rho))
 					chisqr=calc(MAD,fun=function(x) { sum(x^2/var_mad) })
 					wt=1-calc(chisqr,fun=function(x) { pchisq(x,bands) })
