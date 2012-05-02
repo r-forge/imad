@@ -18,8 +18,8 @@
 #' @param auto_extract_overlap Logical. Extract the overlap zones between the images?
 #' @param reuse_existing_raster Logical. If the algorithm detects pre-create overlaps, use them?
 #' @param force_extent Logical. Attempt to force the input files (and masks) to be the same extent?
-#' @param use_clusterR Logical. Use clusterR to (potentially) speed up calculations on a cluster? Default=FALSE.
-#' @param cl Cluster.  If not assigned, the program will attempt to figure it out.
+#' @param enable_snow Logical. Use clusterR to (potentially) speed up calculations on a cluster? Default=FALSE.  EXPERIMENTAL.
+#' @param cl Cluster.  If not assigned, the program will attempt to figure it out.  Use beginCluster() to create a cluster.
 #' @param verbose Logical. Print out debugging information?
 #' @param ... Passed to various raster functions (see writeRaster). Important ones include format= and overwrite=TRUE/FALSE.  datatype should be left as 'FLT4S' for proper functioning.
 #' @return Returns a RasterStack object where the first layer is the chisquare image, and the subsequent layers are the iMad layers.
@@ -51,7 +51,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		output_basename, format="raster",
 		maxiter=100,lam=0,delta=0.001,corr_thresh=0.001,
 		auto_extract_overlap=TRUE,reuse_existing_raster=TRUE,force_extent=TRUE,
-		use_clusterR=FALSE,cl=NULL,
+		enable_snow=FALSE,cl=NULL,
 		verbose=FALSE,
 		...)
 {
@@ -255,7 +255,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	
 	if(verbose) { print("Creating initial weighting raster and stacking inDataSets...")}
 	wt = raster(inDataSet1,layer=1)*0+1
-	
 	dm = stack(inDataSet1,inDataSet2)
 	
 	delta = 1.0
@@ -279,8 +278,13 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		if(verbose) { print("Calculating weighted covariance and means...")}
 #		sigma_means=cov.wt.raster(dm,wt)
 
-		sigma_means=layerStats(dm,'weighted.cov',wt,na.rm=TRUE)
-			
+		if(enable_snow)
+		{
+			sigma_means=layerStats_hpc(dm,'weighted.cov',wt,na.rm=TRUE,enable_snow=TRUE)
+		} else
+		{
+			sigma_means=layerStats(dm,'weighted.cov',wt,na.rm=TRUE)
+		}	
 		sigma=sigma_means[[1]]
 		means=sigma_means[[2]]
 		
@@ -397,7 +401,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					if(verbose) { print("Calculating canonical and MAD variates...")}
 					means_a=means[1:bands]
 					# Experimental clusterR
-					if(use_clusterR)
+					if(enable_snow)
 					{
 						U=clusterR(x=inDataSet1,fun=function(x,a,means_a) { as.vector(t(a)%*%(x-means_a)) }, 
 								args=list(a=a,means_a=means_a) )
@@ -407,7 +411,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					}
 					
 					means_b=means[(bands+1):(bands*2)]
-					if(use_clusterR)
+					if(enable_snow)
 					{
 						V=clusterR(x=inDataSet2,fun=function(x,b,means_b) { as.vector(t(b)%*%(x-means_b)) }, 
 								args=list(a=a,means_a=means_a) )
