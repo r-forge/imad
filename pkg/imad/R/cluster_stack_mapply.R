@@ -38,6 +38,6 @@ cluster_stack_mapply <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, .
 #		}
 #	}
 	
-	x_out = stack(clusterMap(cl,fun=clusfun,x=x_list,MoreArgs=args))
+	x_out = stack(clusterMap(cl,fun=fun,x=x_list,MoreArgs=args))
 	return(x_out)
 }
