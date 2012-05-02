@@ -49,12 +49,11 @@ layerStats_hpc <- function(x, stat, w, asSample=TRUE, na.rm=FALSE, enable_snow=F
 				x=raster_to_list(x),MoreArgs=list(means=means,w_sqrt=w_sqrt)))
 		} else
 		{
-			x <- (x - means) * sqrt(w)
+			x <- (x - means) * w_sqrt
 		}
 
 		
 		ij=which(upper.tri(matrix(ncol=nl,nrow=nl),diag=TRUE),arr.ind=TRUE)
-		
 		ij_idx=as.list(1:(dim(ij)[1]))
 		ij_list=mapply(function(ij_idx,ij) { ij[ij_idx,] },ij_idx=ij_idx,MoreArgs=list(ij=ij),SIMPLIFY=FALSE)
 		

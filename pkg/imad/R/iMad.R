@@ -238,7 +238,13 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			inDataSet1=brick(build_raster_filename(output_inDataSet1_masked,format=format))
 		} else
 		{
-			inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
+			if(enable_snow)
+			{
+				inDataSet1=cluster_stack_mapply(inDataSet1,fun=function(x,mask) { mask(x,mask) },args=list(mask=mask))	
+			} else
+			{
+				inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
+			}
 		}
 
 		if(file.exists(build_raster_filename(output_inDataSet2_masked,format=format)) && reuse_existing_raster)
@@ -246,7 +252,13 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			inDataSet2=brick(build_raster_filename(output_inDataSet2_masked,format=format))
 		} else
 		{
-			inDataSet2=mask(x=inDataSet2,mask=mask,filename=output_inDataSet2_masked,...)
+			if(enable_snow)
+			{
+				inDataSet2=cluster_stack_mapply(inDataSet1,fun=function(x,mask) { mask(x,mask) },args=list(mask=mask))	
+			} else
+			{
+				inDataSet2=mask(x=inDataSet2,mask=mask,filename=output_inDataSet2_masked,...)
+			}
 		}
 
 #		inDataSet1 <- inDataSet1*mask
@@ -414,7 +426,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					if(enable_snow)
 					{
 						V=clusterR(x=inDataSet2,fun=function(x,b,means_b) { as.vector(t(b)%*%(x-means_b)) }, 
-								args=list(a=a,means_a=means_a) )
+								args=list(b=b,means_b=means_b) )
 					} else
 					{
 						V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
