@@ -8,7 +8,7 @@
     delta = 0.001, corr_thresh = 0.001,
     auto_extract_overlap = TRUE,
     reuse_existing_raster = TRUE, force_extent = TRUE,
-    use_clusterR = FALSE, cl = NULL, verbose = FALSE, ...)
+    enable_snow = FALSE, cl = NULL, verbose = FALSE, ...)
 }
 \arguments{
   \item{inDataSet1}{A Raster* object of the first image.}
@@ -60,12 +60,13 @@
   \item{force_extent}{Logical. Attempt to force the input
   files (and masks) to be the same extent?}
 
-  \item{use_clusterR}{Logical. Use clusterR to
-  (potentially) speed up calculations on a cluster?
-  Default=FALSE.}
+  \item{enable_snow}{Logical. Use clusterR to (potentially)
+  speed up calculations on a cluster? Default=FALSE.
+  EXPERIMENTAL.}
 
   \item{cl}{Cluster.  If not assigned, the program will
-  attempt to figure it out.}
+  attempt to figure it out.  Use beginCluster() to create a
+  cluster.}
 
   \item{verbose}{Logical. Print out debugging information?}
 

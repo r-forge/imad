@@ -19,3 +19,6 @@ Collate:
     'Rdggev.R'
     'RADCAL.R'
     'build_raster_filename.R'
+    'brick_to_stack.R'
+    'layerStats_hpc.R'
+    'raster_to_list.R'
