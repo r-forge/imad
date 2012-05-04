@@ -23,3 +23,5 @@ Collate:
     'layerStats_hpc.R'
     'raster_to_list.R'
     'cluster_stack_mapply.R'
+    'calc_hpc.R'
+    'crop_hpc.R'

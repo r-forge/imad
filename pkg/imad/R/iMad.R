@@ -240,7 +240,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		{
 			if(enable_snow)
 			{
-				inDataSet1=cluster_stack_mapply(inDataSet1,fun=function(x,mask) { mask(x,mask) },args=list(mask=mask))	
+				inDataSet1=calc_hpc(inDataSet1,fun=function(x,mask) { mask(x,mask) },args=list(mask=mask))	
 			} else
 			{
 				inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
@@ -254,7 +254,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		{
 			if(enable_snow)
 			{
-				inDataSet2=cluster_stack_mapply(inDataSet1,fun=function(x,mask) { mask(x,mask) },args=list(mask=mask))	
+				inDataSet2=calc_hpc(inDataSet1,fun=function(x,mask) { mask(x,mask) },args=list(mask=mask))	
 			} else
 			{
 				inDataSet2=mask(x=inDataSet2,mask=mask,filename=output_inDataSet2_masked,...)
@@ -266,7 +266,14 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	}
 	
 	if(verbose) { print("Creating initial weighting raster and stacking inDataSets...")}
-	wt = raster(inDataSet1,layer=1)*0+1
+	if(enable_snow)
+	{
+		wt = calc_hpc(inDataSet1,fun=function(x) { x*0+1 })
+	} else
+	{
+		wt = raster(inDataSet1,layer=1)*0+1
+	}
+	
 	dm = stack(inDataSet1,inDataSet2)
 	
 	delta = 1.0
@@ -415,8 +422,10 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					# Experimental clusterR
 					if(enable_snow)
 					{
-						U=clusterR(x=inDataSet1,fun=function(x,a,means_a) { as.vector(t(a)%*%(x-means_a)) }, 
-								args=list(a=a,means_a=means_a) )
+						U=calc_hpc(x=inDataSet1,fun=function(x,a,means_a) { as.vector(t(a)%*%(x-means_a)) }, 
+								args=list(a=a,means_a=means_a))
+#						U=clusterR(x=inDataSet1,fun=function(x,a,means_a) { as.vector(t(a)%*%(x-means_a)) }, 
+#								args=list(a=a,means_a=means_a) )
 					} else
 					{
 						U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
@@ -425,20 +434,24 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					means_b=means[(bands+1):(bands*2)]
 					if(enable_snow)
 					{
-						V=clusterR(x=inDataSet2,fun=function(x,b,means_b) { as.vector(t(b)%*%(x-means_b)) }, 
+						V=calc_hpc(x=inDataSet2,fun=function(x,b,means_b) { as.vector(t(b)%*%(x-means_b)) }, 
 								args=list(b=b,means_b=means_b) )
 					} else
 					{
 						V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
 					}
 					
-#					if(use_clusterR)
-#					{
-#						MAD = clusterR(U,fun(U,V) { U-V },args=list(V))
-#					} else
-#					{
+					if(enable_snow)
+					{
+						MAD=calc_hpc(x=stack(U,V),
+							fun=function(x,b1,b2)
+							{
+								(raster(x,layer=b1)-raster(x,layer=b2))
+							},args=list(b1=1,b2=2))
+					} else
+					{
 						MAD = U-V
-#					}	
+					}	
 					#     new weights	
 					if(verbose) { print("Generating new weights...")}
 					var_mad=t(2*(1-rho))

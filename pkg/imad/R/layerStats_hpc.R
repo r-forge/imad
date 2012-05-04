@@ -47,8 +47,6 @@ layerStats_hpc <- function(x, stat, w, asSample=TRUE, na.rm=FALSE, enable_snow=F
 			means <- cellStats(x * w, stat='sum', na.rm=na.rm) / sumw
 		}
 		
-		
-		
 		sumw <- sumw - asSample
 		
 		w_sqrt=sqrt(w)
