@@ -342,7 +342,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 
 		if(enable_snow)
 		{
-			sigma_means=layerStats_hpc(dm,'weighted.cov',wt,na.rm=TRUE,enable_snow=TRUE)
+			sigma_means=layerStats_hpc(x=dm,w=wt,stat='weighted.cov',na.rm=TRUE,enable_snow=TRUE)
 		} else
 		{
 			sigma_means=layerStats(dm,'weighted.cov',wt,na.rm=TRUE)

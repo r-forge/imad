@@ -58,7 +58,7 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 						return(w*x_image)
 					})	
 			means=layerStats_hpc(xw,'sum',na.rm=na.rm)/sumw
-			sumw <- sumw - asSample
+#			sumw <- sumw - asSample
 			w_sqrt = calc_hpc(x=w,fun=sqrt)
 			x = stack(clusterMap(cl,fun=function(x,means,w_sqrt) { (x - means) * w_sqrt },
 							x=raster_to_list(x),MoreArgs=list(means=means,w_sqrt=w_sqrt)))

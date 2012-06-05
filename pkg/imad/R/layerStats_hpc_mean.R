@@ -40,7 +40,7 @@ layerStats_hpc_mean <- function(x,na.rm=FALSE, enable_snow=FALSE, cl=NULL, m=2,v
 	if(enable_snow)
 	{
 		if(verbose) { print("Starting the cluster function...")}
-		sumCount <- clusterMap(cl,function(fun,i,x,tr,na.rm) 
+		sumCount <- clusterMap(cl,function(i,x,tr,na.rm) 
 				{
 					r <- getValues(crop(x, extent(x, r1=tr$row[i], r2=tr$row2[i], c1=1, c2=ncol(x))))
 					if(class(r)=="matrix")
@@ -54,7 +54,7 @@ layerStats_hpc_mean <- function(x,na.rm=FALSE, enable_snow=FALSE, cl=NULL, m=2,v
 					}
 					return(cbind(temp_sum,temp_count))
 				},
-				i,MoreArgs=list(fun=fun,x=x,tr=tr,na.rm=na.rm))
+				i,MoreArgs=list(x=x,tr=tr,na.rm=na.rm))
 		if(nlayers_x > 1){
 			layersums=rowSums(sapply(sumCount,function(x) { x[,1] }),na.rm=na.rm)
 			layercounts=rowSums(sapply(sumCount,function(x) { x[,2] }),na.rm=na.rm)
