@@ -112,7 +112,7 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 						rasteri=raster(x,layer=i)
 						rasterj=raster(x,layer=j)
 #						r <- raster(x,layer=i)*raster(x,layer=j)
-						r=calc_hpc(x=stack(rasteri,rasterj),
+						r=calc_hpc(x=stack(list(rasteri,rasterj)),
 								fun=function(x)
 								{
 									return(raster(x,layer=1)*raster(x,layer=2))
