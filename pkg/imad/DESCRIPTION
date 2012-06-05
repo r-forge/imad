@@ -1,7 +1,7 @@
 Package: imad
 Type: Package
 Title: Iteratively Re-weighted Multivariate Alteration Detection (iMAD)
-Version: 0.4
+Version: 0.4-1
 Date: 5-June-2012
 Depends:
     raster (>= 1.9-91),

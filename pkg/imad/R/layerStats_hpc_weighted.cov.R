@@ -102,7 +102,7 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 #						return(v)
 #					},
 #					ij=ij_list,MoreArgs=list(x=x,na.rm=na.rm,sumw=sumw))
-			v_list=clusterMap(cl,fun=function(ij,x,na.rm,sumw) { 
+			v_list=mapply(fun=function(ij,x,na.rm,sumw) { 
 						i <- ij[1]
 						j <- ij[2]
 						rasteri=raster(x,layer=i)
