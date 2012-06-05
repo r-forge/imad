@@ -60,11 +60,24 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 						x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
 						return(w*x_image)
 					})	
+			if(verbose) { print("Calculated weighted means...")}
 			means=layerStats_hpc(xw,'sum',na.rm=na.rm)/sumw
 #			sumw <- sumw - asSample
+			if(verbose) { print("sqrt(wt)...")}
 			w_sqrt = calc_hpc(x=w,fun=sqrt)
-			x = stack(clusterMap(cl,fun=function(x,means,w_sqrt) { (x - means) * w_sqrt },
-							x=raster_to_list(x),MoreArgs=list(means=means,w_sqrt=w_sqrt)))
+#			x = stack(clusterMap(cl,fun=function(x,means,w_sqrt) { (x - means) * w_sqrt },
+#							x=raster_to_list(x),MoreArgs=list(means=means,w_sqrt=w_sqrt)))
+			x=calc_hpc(x=stack(w_sqrt,x),args=list(means=means),
+				fun=function(x,means)
+				{
+					nlayers_x=nlayers(x)
+					pos=2:nlayers_x
+					w_sqrt=raster(x,layer=1)
+					x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
+					return((x-means)*w_sqrt)
+				}
+			)
+			
 		} else
 		{
 			sumw <- cellStats(w, stat='sum', na.rm=na.rm) 
@@ -94,14 +107,14 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 						j <- ij[2]
 						rasteri=raster(x,layer=i)
 						rasterj=raster(x,layer=j)
+#						r <- raster(x,layer=i)*raster(x,layer=j)
 						r=calc_hpc(x=stack(rasteri,rasterj),
 								fun=function(x)
 								{
 									raster(x,layer=1)*raster(x,layer=2)
 								})
-						v=layerStats_hpc(r,stat='sum',na.rm=na.rm)/sumw
-#						r <- raster(x,layer=i)*raster(x,layer=j)
 #						v <- cellStats(r, stat='sum', na.rm=na.rm) / sumw
+						v=layerStats_hpc(r,stat='sum',na.rm=na.rm)/sumw
 						return(v)
 					},
 					ij=ij_list,MoreArgs=list(x=x,na.rm=na.rm,sumw=sumw))	
