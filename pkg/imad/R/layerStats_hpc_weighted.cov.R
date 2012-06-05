@@ -48,7 +48,9 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 		
 		if(enable_snow)
 		{
+			if(verbose) { print("Calculating weight sum...")}
 			sumw=layerStats_hpc(w,'sum',na.rm=na.rm)
+			if(verbose) { print("Multiplying x by w...")}
 			xw = calc_hpc(stack(w,x),
 					fun=function(x) 
 					{ 
@@ -78,14 +80,32 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 		ij_list=mapply(function(ij_idx,ij) { ij[ij_idx,] },ij_idx=ij_idx,MoreArgs=list(ij=ij),SIMPLIFY=FALSE)
 		
 		if(enable_snow) { 
+		
+#			v_list=clusterMap(cl,fun=function(ij,x,na.rm,sumw) { 
+#						i <- ij[1]
+#						j <- ij[2]
+#						r <- raster(x,layer=i)*raster(x,layer=j)
+#						v <- cellStats(r, stat='sum', na.rm=na.rm) / sumw
+#						return(v)
+#					},
+#					ij=ij_list,MoreArgs=list(x=x,na.rm=na.rm,sumw=sumw))
 			v_list=clusterMap(cl,fun=function(ij,x,na.rm,sumw) { 
 						i <- ij[1]
 						j <- ij[2]
-						r <- raster(x,layer=i)*raster(x,layer=j)
-						v <- cellStats(r, stat='sum', na.rm=na.rm) / sumw
+						rasteri=raster(x,layer=i)
+						rasterj=raster(x,layer=j)
+						r=calc_hpc(x=stack(rasteri,rasterj),
+								fun=function(x)
+								{
+									raster(x,layer=1)*raster(x,layer=2)
+								})
+						v=layerStats_hpc(r,stat='sum',na.rm=na.rm)/sumw
+#						r <- raster(x,layer=i)*raster(x,layer=j)
+#						v <- cellStats(r, stat='sum', na.rm=na.rm) / sumw
 						return(v)
 					},
-					ij=ij_list,MoreArgs=list(x=x,na.rm=na.rm,sumw=sumw))
+					ij=ij_list,MoreArgs=list(x=x,na.rm=na.rm,sumw=sumw))	
+		
 			for(k in 1:(length(v_list)))
 			{
 				i=ij_list[[k]][1]

@@ -323,7 +323,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		if(enable_snow)
 		{
 			if(verbose) { print("HPC calculating weighted covariance and means...")}
-			sigma_means=layerStats_hpc(x=dm,w=wt,stat='weighted.cov',na.rm=TRUE,enable_snow=TRUE)
+			sigma_means=layerStats_hpc(x=dm,w=wt,stat='weighted.cov',na.rm=TRUE,enable_snow=TRUE,verbose=verbose)
 		} else
 		{
 			if(verbose) { print("Calculating weighted covariance and means...")}
