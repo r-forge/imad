@@ -106,17 +106,17 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 #					ij=ij_list,MoreArgs=list(x=x,na.rm=na.rm,sumw=sumw))
 	# Need to spawn mini clusters for this, or just let it go sequentially...
 			if(verbose) { print("creating v_list") }
-			v_list=mapply(fun=function(ij,x,na.rm,sumw) { 
+			v_list=mapply(FUN=function(ij,x,na.rm,sumw) { 
 						i <- ij[1]
 						j <- ij[2]
 						rasteri=raster(x,layer=i)
 						rasterj=raster(x,layer=j)
-						r <- raster(x,layer=i)*raster(x,layer=j)
-#						r=calc_hpc(x=stack(list(rasteri,rasterj)),
-#								fun=function(x)
-#								{
-#									return(raster(x,layer=1)*raster(x,layer=2))
-#								})
+#						r <- raster(x,layer=i)*raster(x,layer=j)
+						r=calc_hpc(x=stack(list(rasteri,rasterj)),
+								fun=function(x)
+								{
+									return(raster(x,layer=1)*raster(x,layer=2))
+								})
 #						v <- cellStats(r, stat='sum', na.rm=na.rm) / sumw
 						v=layerStats_hpc(r,stat='sum',na.rm=na.rm)/sumw
 						return(v)
