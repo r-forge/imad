@@ -1,3 +1,4 @@
+#' @export
 
 layerStats_hpc_mean <- function(x,na.rm=FALSE, enable_snow=FALSE, cl=NULL, m=2,verbose=FALSE)
 {

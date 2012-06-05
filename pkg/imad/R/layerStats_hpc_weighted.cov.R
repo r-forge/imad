@@ -1,3 +1,4 @@
+#' @export
 
 layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_snow=FALSE, cl=NULL, m=2,verbose=FALSE)
 {

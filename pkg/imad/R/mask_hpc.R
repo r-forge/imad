@@ -1,4 +1,4 @@
-
+#' @export
 
 mask_hpc <- function(x, mask, cl=NULL, disable_cl=FALSE, ...)
 {

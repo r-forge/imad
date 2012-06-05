@@ -1,3 +1,4 @@
+#' @export
 
 cluster_stack_mapply <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, ...)
 {

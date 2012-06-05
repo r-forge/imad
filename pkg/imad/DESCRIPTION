@@ -1,8 +1,8 @@
 Package: imad
 Type: Package
 Title: Iteratively Re-weighted Multivariate Alteration Detection (iMAD)
-Version: 0.3
-Date: 1-May-2012
+Version: 0.4
+Date: 5-June-2012
 Depends:
     raster (>= 1.9-91),
     R (>= 2.15.0)
@@ -24,4 +24,7 @@ Collate:
     'raster_to_list.R'
     'cluster_stack_mapply.R'
     'calc_hpc.R'
-    'crop_hpc.R'
+    'layerStats_hpc_mean.R'
+    'layerStats_hpc_sum.R'
+    'layerStats_hpc_weighted.cov.R'
+    'mask_hpc.R'

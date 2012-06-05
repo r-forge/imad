@@ -1,4 +1,4 @@
-
+#' @export
 
 brick_to_stack <- function(inbrick)
 {
