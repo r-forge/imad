@@ -260,17 +260,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			if(enable_snow)
 			{
 				if(verbose) { print("HPC masking inDataSet1...") }
-				inDataSet1=calc_hpc(stack(mask,inDataSet1),
-						fun=function(x)
-						{ 
-							nlayers_x=nlayers(x)
-							mask=raster(x,layer=1)
-							pos=2:nlayers_x
-							x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
-							mask*x_image
-						},
-						filename=output_inDataSet1_masked
-				)	
+				inDataSet1=mask_hpc(inDataSet1,mask)
 			} else
 			{
 				inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
@@ -285,17 +275,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			if(enable_snow)
 			{
 				if(verbose) { print("HPC masking inDataSet2...") }
-				inDataSet2=calc_hpc(stack(mask,inDataSet2),
-						fun=function(x)
-						{ 
-							nlayers_x=nlayers(x)
-							mask=raster(x,layer=1)
-							pos=2:nlayers_x
-							x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
-							mask*x_image
-						},
-						filename=output_inDataSet2_masked
-				)
+				inDataSet2=mask_hpc(inDataSet2,mask)
 			} else
 			{
 				inDataSet2=mask(x=inDataSet2,mask=mask,filename=output_inDataSet2_masked,...)
