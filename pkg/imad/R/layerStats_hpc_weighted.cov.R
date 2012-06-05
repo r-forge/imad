@@ -115,7 +115,7 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 						r=calc_hpc(x=stack(rasteri,rasterj),
 								fun=function(x)
 								{
-									raster(x,layer=1)*raster(x,layer=2)
+									return(raster(x,layer=1)*raster(x,layer=2))
 								})
 #						v <- cellStats(r, stat='sum', na.rm=na.rm) / sumw
 						v=layerStats_hpc(r,stat='sum',na.rm=na.rm)/sumw
