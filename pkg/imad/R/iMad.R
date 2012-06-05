@@ -317,16 +317,21 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		}
 		
 		# This needs to be swapped with "layerStats" in raster
-		if(verbose) { print("Calculating weighted covariance and means...")}
+		
 #		sigma_means=cov.wt.raster(dm,wt)
 
 		if(enable_snow)
 		{
+			if(verbose) { print("HPC calculating weighted covariance and means...")}
 			sigma_means=layerStats_hpc(x=dm,w=wt,stat='weighted.cov',na.rm=TRUE,enable_snow=TRUE)
 		} else
 		{
+			if(verbose) { print("Calculating weighted covariance and means...")}
 			sigma_means=layerStats(dm,'weighted.cov',wt,na.rm=TRUE)
 		}	
+		
+		if(verbose) { print(sigma_means) }
+		
 		sigma=sigma_means[[1]]
 		means=sigma_means[[2]]
 		
