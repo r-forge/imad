@@ -111,18 +111,18 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 						j <- ij[2]
 						rasteri=raster(x,layer=i)
 						rasterj=raster(x,layer=j)
-#						r <- raster(x,layer=i)*raster(x,layer=j)
-						r=calc_hpc(x=stack(list(rasteri,rasterj)),
-								fun=function(x)
-								{
-									return(raster(x,layer=1)*raster(x,layer=2))
-								})
+						r <- raster(x,layer=i)*raster(x,layer=j)
+#						r=calc_hpc(x=stack(list(rasteri,rasterj)),
+#								fun=function(x)
+#								{
+#									return(raster(x,layer=1)*raster(x,layer=2))
+#								})
 #						v <- cellStats(r, stat='sum', na.rm=na.rm) / sumw
 						v=layerStats_hpc(r,stat='sum',na.rm=na.rm)/sumw
 						return(v)
 					},
 					ij=ij_list,MoreArgs=list(x=x,na.rm=na.rm,sumw=sumw))	
-		
+			if(verbose) { print("done with v_list") }
 			for(k in 1:(length(v_list)))
 			{
 				i=ij_list[[k]][1]
