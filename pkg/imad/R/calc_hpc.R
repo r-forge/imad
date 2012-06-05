@@ -46,7 +46,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 		outbands=dim(r_check_function)[2]
 	}
 	
-	print(outbands)
+	if(verbose) { print(outbands) }
 	
 	if(verbose) { print("Creating output file with ff...")}
 	outdata_ncells=nrow(x)*ncol(x)*outbands
@@ -55,8 +55,8 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 		filename <- tempfile()
 	} 
 	
-	print(outdata_ncells)
-	print(filename)
+	if(verbose) { print(outdata_ncells) }
+	if(verbose) { print(filename) }
 	
 	# How about using ff?
 	out<-ff(vmode="double",length=outdata_ncells,filename=filename)

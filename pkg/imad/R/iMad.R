@@ -448,6 +448,9 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					if(verbose) { print("Calculating canonical and MAD variates...")}
 					means_a=means[1:bands]
 					# Experimental clusterR
+	
+					if(verbose) { print(a) }
+					if(verbose) { print(means_a) }
 					if(enable_snow)
 					{
 						U=calc_hpc(x=inDataSet1,fun=function(x,a,means_a) { as.vector(t(a)%*%(x-means_a)) }, 
