@@ -67,6 +67,7 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 			w_sqrt = calc_hpc(x=w,fun=sqrt)
 #			x = stack(clusterMap(cl,fun=function(x,means,w_sqrt) { (x - means) * w_sqrt },
 #							x=raster_to_list(x),MoreArgs=list(means=means,w_sqrt=w_sqrt)))
+			if(verbose) { print("(x-means)*w_sqrt...")}
 			x=calc_hpc(x=stack(w_sqrt,x),args=list(means=means),
 				fun=function(x,means)
 				{
@@ -88,6 +89,7 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 			x <- (x - means) * w_sqrt
 		}
 		
+		if(verbose) { print("creating ij") }
 		ij=which(upper.tri(matrix(ncol=nl,nrow=nl),diag=TRUE),arr.ind=TRUE)
 		ij_idx=as.list(1:(dim(ij)[1]))
 		ij_list=mapply(function(ij_idx,ij) { ij[ij_idx,] },ij_idx=ij_idx,MoreArgs=list(ij=ij),SIMPLIFY=FALSE)
@@ -102,6 +104,8 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 #						return(v)
 #					},
 #					ij=ij_list,MoreArgs=list(x=x,na.rm=na.rm,sumw=sumw))
+	# Need to spawn mini clusters for this, or just let it go sequentially...
+			if(verbose) { print("creating v_list") }
 			v_list=mapply(fun=function(ij,x,na.rm,sumw) { 
 						i <- ij[1]
 						j <- ij[2]
