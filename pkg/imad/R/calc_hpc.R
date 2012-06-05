@@ -1,5 +1,6 @@
 # clusterR using mmap
 # Original code by Robert Hijimans, mmap integration by Jonathan Greenberg
+#' @export
 
 calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FALSE,verbose=FALSE,...) {
 	require("raster")
@@ -8,6 +9,8 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	require("ff")
 	
 	# Do some file checks up here.
+	
+	if(verbose) { print("Setting up cluster...")}
 	
 	if(disable_cl)
 	{
@@ -24,16 +27,18 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	# We should test a single pixel here to see the size of the output...
 	
 	# We are going to pull out the first row and first two pixels to check the function...
+	if(verbose) { print("Performing a pre-check...")}
 	r_check <- crop(x, extent(x, r1=1, r2=1, c1=1,c2=2))
 	
 	if(!is.null(args)) {
-		r_check_function <- getValues(fun(r_check)) 
+		r_check_function <- getValues(do.call(fun, c(r_check, args)))
 	} else
 	{
-		r_check_function <- getValues(do.call(fun, c(r_check, args)))
+		r_check_function <- getValues(fun(r_check)) 
 	}
 	
-	if(class(r_check_function)=="numeric")
+	if(verbose) { print("Determining number of output bands...")}
+	if(class(r_check_function)=="numeric" || class(r_check_function)=="logical")
 	{
 		outbands=1
 	} else
@@ -41,18 +46,24 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 		outbands=dim(r_check_function)[2]
 	}
 	
+	print(outbands)
 	
+	if(verbose) { print("Creating output file with ff...")}
 	outdata_ncells=nrow(x)*ncol(x)*outbands
 	if(filename=="")
 	{	
 		filename <- tempfile()
 	} 
 	
+	print(outdata_ncells)
+	print(filename)
+	
 	# How about using ff?
 	out<-ff(vmode="double",length=outdata_ncells,filename=filename)
 	finalizer(out) <- close
 	close(out)
 	
+	if(verbose) { print("Determining optimal block size...")}
 	m <- max(1, round(m))
 	tr <- blockSize(x, minblocks=nodes*m )
 	if (tr$n < nodes) {
@@ -90,10 +101,11 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 
 	} else
 	{
+		if(verbose) { print("Starting the cluster function...")}
 		clusterMap(cl,function(fun,i,args,x,tr,filename,outbands) 
 			{
 				r <- crop(x, extent(x, r1=tr$row[i], r2=tr$row2[i], c1=1, c2=ncol(x)))
-				if(!is.null(args)) {
+				if(is.null(args)) {
 					r <- fun(r) 
 				} else
 				{
@@ -112,7 +124,14 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	}
 		
 	# Let's see if we can trick raster into making us a proper header...
-	reference_raster=brick(raster(x,layer=1),nl=outbands)
+	if(outbands > 1) 
+	{ 
+		reference_raster=brick(raster(x,layer=1),nl=outbands) 
+	} else
+	{
+		if(nlayers(x) > 1) { reference_raster=raster(x,layer=1) } else
+		{ reference_raster=x }	
+	}
 	outraster_base <- writeStart(reference_raster,filename=paste(filename,".grd",sep=""),datatype="FLT8S",bandorder="BIP",...)
 	suppressWarnings(outraster_base <- writeStop(outraster_base))
 	file.remove(paste(filename,".gri",sep=""))

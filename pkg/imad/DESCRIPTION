@@ -5,7 +5,8 @@ Version: 0.3
 Date: 1-May-2012
 Depends:
     raster (>= 1.9-91),
-    R (>= 2.11.0)
+    R (>= 2.11.0),
+    rasterhpc
 Author: Mort Canty (original version) & Jonathan A. Greenberg (R port) & Carlos
     Ramirez
 Maintainer: Jonathan A. Greenberg <imad@estarcion.net>

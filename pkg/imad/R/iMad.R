@@ -79,7 +79,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	output_MAD_filename=paste(output_basename,"_iMAD",sep="")
 	output_chisqr_filename=paste(output_basename,"_iMAD_chisqr",sep="")
 	
-	# Subset out bands if needed.
+##### Subset out bands if needed.
 	if(!missing(pos))
 	{
 		if(verbose) { print("Subsetting bands...")}
@@ -92,7 +92,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	bands=nlayers(inDataSet1)
 	pos=0:(bands-1)
 	
-	# Extract overlap regions
+##### Extract overlap regions
 	if(auto_extract_overlap)
 	{
 		if(verbose) { print("Extracting the overlap region...") }
@@ -117,12 +117,13 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			# First check to see if they line up...
 		
 			# If not, run the extraction...
-			overlaps=extract_overlap_rasters(inDataSet1,inDataSet2,
-					filename1=output_inDataSet1_subset_filename,filename2=output_inDataSet2_subset_filename,
-					verbose=verbose,format=format,datatype='FLT4S',...)
-			inDataSet1=overlaps[[1]]
-			inDataSet2=overlaps[[2]]
-
+#			overlaps=extract_overlap_rasters(inDataSet1,inDataSet2,
+#					filename1=output_inDataSet1_subset_filename,filename2=output_inDataSet2_subset_filename,
+#					verbose=verbose,format=format,datatype='FLT4S',...)
+#			inDataSet1=overlaps[[1]]
+#			inDataSet2=overlaps[[2]]
+			inDataSet1=crop(inDataSet1,inDataSet2,filename=output_inDataSet1_subset_filename,datatype='FLT4S',verbose=verbose,...)
+			inDataSet2=crop(inDataSet2,inDataSet1,filename=output_inDataSet2_subset_filename,datatype='FLT4S',verbose=verbose,...)
 		} else
 		{
 		# Otherwise use the existing cropped datasets.
@@ -132,45 +133,50 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		}		
 		
 		# Now crop the masks and add them together.
-		if(!missing(mask1) || !missing(mask2))
+		if((!missing(mask1) || !missing(mask2)) && auto_extract_overlap)
 		{
-			if(!missing(mask1))
+#			if(verbose) { print(class(mask1)) }
+			if(!missing(mask1) && !(class(mask1)=="numeric"))
 			{
 				if(verbose) { print("Cropping mask1...") }
-				mask1_overlap=extract_overlap_rasters(mask1,inDataSet2,
-						filename1=output_inDataSet1_subset_mask_filename,
-						raster2_crop=FALSE,
-						verbose=verbose,format=format,...)
-				mask1=mask1_overlap
+				mask1=crop(mask1,inDataSet1)
+#				mask1_overlap=extract_overlap_rasters(mask1,inDataSet2,
+#						filename1=output_inDataSet1_subset_mask_filename,
+#						raster2_crop=FALSE,
+#						verbose=verbose,format=format,...)
+#				mask1=mask1_overlap
 			}
 			
-			if(!missing(mask2))
+			if(!missing(mask2) && !(class(mask2)=="numeric"))
 			{
 				if(verbose) { print("Cropping mask2...") }
-				mask2_overlap=extract_overlap_rasters(inDataSet1,mask2,
-						filename2=output_inDataSet2_subset_mask_filename,
-						raster1_crop=FALSE,
-						verbose=verbose,format=format,...)
-				mask2=mask2_overlap
+				mask2=crop(mask2,inDataSet2)
+#				mask2_overlap=extract_overlap_rasters(inDataSet1,mask2,
+#						filename2=output_inDataSet2_subset_mask_filename,
+#						raster1_crop=FALSE,
+#						verbose=verbose,format=format,...)
+#				mask2=mask2_overlap
 			}
-		} else
-		{
-			mask=NA
 		}
+		
 		
 	} else
 	{
 		if(verbose) { print("Not extracting the overlap region...") }
 		# Should check for overlap here...
 	}
+
 	
+##### Fix extents if need be...
+
 	# Fix for extents that differ.  We should combine this with a col/row check.
 	if(force_extent)
 	{
+		if(verbose) { print("Forcing extents...") }
 		extent(inDataSet2)=extent(inDataSet1)
 	}
 	
-	# Set up masks
+##### Set up the masks
 	mask=NA
 	# Check for numeric masks
 	if(!missing(mask1))
@@ -178,7 +184,14 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		if(class(mask1)=="numeric")
 		{
 			if(verbose) { print("Creating mask1...") }
-			mask1=raster(inDataSet1,layer=mask1_band) != 0
+			### TODO: HPC
+			if(enable_snow)
+			{
+				mask1=calc_hpc(x=raster(inDataSet1,layer=mask1_band),function(x,mask1) { x != mask1 },args=list(mask1=mask1))			
+			} else
+			{
+				mask1=raster(inDataSet1,layer=mask1_band) != mask1
+			}
 		}
 	}
 	
@@ -187,7 +200,13 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		if(class(mask2)=="numeric")
 		{
 			if(verbose) { print("Creating mask2...") }
-			mask2=raster(inDataSet2,layer=mask1_band) != 0
+			if(enable_snow)
+			{
+				mask2=calc_hpc(x=raster(inDataSet2,layer=mask2_band),function(x,mask2) { x != mask2 },args=list(mask2=mask2))
+			} else
+			{
+				mask2=raster(inDataSet2,layer=mask2_band) != mask2
+			}
 		}
 	}
 	
@@ -240,7 +259,18 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		{
 			if(enable_snow)
 			{
-				inDataSet1=calc_hpc(inDataSet1,fun=function(x,mask) { mask(x,mask) },args=list(mask=mask))	
+				if(verbose) { print("HPC masking inDataSet1...") }
+				inDataSet1=calc_hpc(stack(mask,inDataSet1),
+						fun=function(x)
+						{ 
+							nlayers_x=nlayers(x)
+							mask=raster(x,layer=1)
+							pos=2:nlayers_x
+							x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
+							mask*x_image
+						},
+						filename=output_inDataSet1_masked
+				)	
 			} else
 			{
 				inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)
@@ -254,7 +284,18 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		{
 			if(enable_snow)
 			{
-				inDataSet2=calc_hpc(inDataSet1,fun=function(x,mask) { mask(x,mask) },args=list(mask=mask))	
+				if(verbose) { print("HPC masking inDataSet2...") }
+				inDataSet2=calc_hpc(stack(mask,inDataSet2),
+						fun=function(x)
+						{ 
+							nlayers_x=nlayers(x)
+							mask=raster(x,layer=1)
+							pos=2:nlayers_x
+							x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
+							mask*x_image
+						},
+						filename=output_inDataSet2_masked
+				)
 			} else
 			{
 				inDataSet2=mask(x=inDataSet2,mask=mask,filename=output_inDataSet2_masked,...)
@@ -268,7 +309,9 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(verbose) { print("Creating initial weighting raster and stacking inDataSets...")}
 	if(enable_snow)
 	{
-		wt = calc_hpc(inDataSet1,fun=function(x) { x*0+1 })
+		wt = calc_hpc(raster(inDataSet1,layer=1),fun=function(x) { x*0+1 })	
+		
+		wt = mask_hpc(wt,mask)
 	} else
 	{
 		wt = raster(inDataSet1,layer=1)*0+1
@@ -282,7 +325,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	ab_nan=FALSE
 
 # Mods to include the penalization function.  Comment this out if this chokes.
-	if(lam>0) { Omega_L = diag(bands) }
+#	if(lam>0) { Omega_L = diag(bands) }
 
 	
 ### MAIN LOOP
@@ -441,17 +484,17 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 						V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
 					}
 					
-					if(enable_snow)
-					{
-						MAD=calc_hpc(x=stack(U,V),
-							fun=function(x,b1,b2)
-							{
-								(raster(x,layer=b1)-raster(x,layer=b2))
-							},args=list(b1=1,b2=2))
-					} else
-					{
+#					if(enable_snow)
+#					{
+#						MAD=calc_hpc(x=stack(U,V),
+#							fun=function(x,b1,b2)
+#							{
+#								(raster(x,layer=b1)-raster(x,layer=b2))
+#							},args=list(b1=1,b2=2))
+#					} else
+#					{
 						MAD = U-V
-					}	
+#					}	
 					#     new weights	
 					if(verbose) { print("Generating new weights...")}
 					var_mad=t(2*(1-rho))

@@ -6,8 +6,9 @@
 # Computation of the weighted covariance and (optionally) weighted means of bands in an Raster.
 # based on code by Mort Canty
 
+#' @export
 
-layerStats_hpc <- function(x, stat, w, asSample=TRUE, na.rm=FALSE, enable_snow=FALSE, cl=NULL, ...) {
+layerStats_hpc <- function(x, stat, w, asSample=TRUE, na.rm=FALSE, enable_snow=TRUE, cl=NULL, verbose=FALSE, ...) {
 	if(enable_snow) { 
 		require("snowfall")
 		if (is.null(cl)) {
@@ -17,7 +18,7 @@ layerStats_hpc <- function(x, stat, w, asSample=TRUE, na.rm=FALSE, enable_snow=F
 	}
 	
 	stat <- tolower(stat)
-	stopifnot(stat %in% c('cov', 'weighted.cov', 'pearson'))
+	stopifnot(stat %in% c('cov', 'weighted.cov', 'pearson', 'sum','mean'))
 	stopifnot(is.logical(asSample) & !is.na(asSample))
 
 	nl <- nlayers(x)
@@ -41,21 +42,31 @@ layerStats_hpc <- function(x, stat, w, asSample=TRUE, na.rm=FALSE, enable_snow=F
 		sumw <- cellStats(w, stat='sum', na.rm=na.rm) 
 		if(enable_snow)
 		{
-			
+			xw = calc_hpc(stack(w,x),
+				fun=function(x) 
+				{ 
+					nlayers_x=nlayers(x)
+					w=raster(x,layer=1)
+					pos=2:nlayers_x
+					x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
+					return(w*x_image)
+				})	
+			means <- cellStats(xw, stat='sum', na.rm=na.rm) / sumw
 		} else
 		{
-			means <- cellStats(x * w, stat='sum', na.rm=na.rm) / sumw
+			xw=x*w
+			means <- cellStats(xw, stat='sum', na.rm=na.rm) / sumw
 		}
 		
 		sumw <- sumw - asSample
 		
-		w_sqrt=sqrt(w)
-		
 		if(enable_snow) { 
+			w_sqrt = calc_hpc(x=w,fun=sqrt)
 			x = stack(clusterMap(cl,fun=function(x,means,w_sqrt) { (x - means) * w_sqrt },
 				x=raster_to_list(x),MoreArgs=list(means=means,w_sqrt=w_sqrt)))
 		} else
 		{
+			w_sqrt=sqrt(w)
 			x <- (x - means) * w_sqrt
 		}
 
@@ -91,7 +102,7 @@ layerStats_hpc <- function(x, stat, w, asSample=TRUE, na.rm=FALSE, enable_snow=F
 			}
 		}
 		cov.w <- list(mat, means)
-		names(cov.w) <- c("weigthed covariance", "weighted mean")
+		names(cov.w) <- c("weighted covariance", "weighted mean")
 		return(cov.w)		
 		
 	} else if (stat == 'cov') {
@@ -136,6 +147,19 @@ layerStats_hpc <- function(x, stat, w, asSample=TRUE, na.rm=FALSE, enable_snow=F
 		return(covar)
 		
 	}
+	
+	if(stat=="sum")
+	{
+		return(layerStats_hpc_sum(x,na.rm=na.rm, enable_snow=enable_snow, cl=cl, m=m,verbose=verbose))
+	}
+	
+	if(stat=="mean")
+	{
+		return(layerStats_hpc_mean(x,na.rm=na.rm, enable_snow=enable_snow, cl=cl, m=m,verbose=verbose))
+	}
+	
+	
+	
 }
 
 

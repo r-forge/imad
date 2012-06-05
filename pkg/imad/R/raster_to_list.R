@@ -1,4 +1,4 @@
-
+#' @export
 
 raster_to_list=function(inraster)
 {
