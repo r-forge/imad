@@ -110,6 +110,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 				} else
 				{
 					r <- do.call(fun, c(r, args))
+					if(verbose) { print(class(r)) }
 				}
 				out <- mmap(filename,mode=real64())
 				cellStart=((cellFromRowCol(x,row=tr$row[i],col=1))-1)*outbands+1
