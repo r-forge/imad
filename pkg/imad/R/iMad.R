@@ -534,7 +534,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 								{
 									bands=nlayers(x)
 									x=getValues(x)
-									out=pchisq(x,bands)
+									out=1-pchisq(x,bands)
 									return(out)
 								})
 						
