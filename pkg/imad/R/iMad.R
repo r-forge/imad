@@ -503,7 +503,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 
 					#     new weights	
 					if(verbose) { print("Generating new weights...")}
-					var_mad=t(2*(1-rho))
+					var_mad=2*(1-rho)
+					
 					if(verbose) { print(var_mad)}
 					
 					if(enable_snow)
