@@ -495,9 +495,36 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					#     new weights	
 					if(verbose) { print("Generating new weights...")}
 					var_mad=t(2*(1-rho))
-					chisqr=calc(MAD,fun=function(x) { sum(x^2/var_mad) })
-					wt=1-calc(chisqr,fun=function(x) { pchisq(x,bands) })
+					if(verbose) { print(var_mad)}
+					
+					if(enable_snow)
+					{
+						if(verbose) { print("HPC chisquare...")}
+						chisqr=calc_hpc(MAD,args=list(var_mad=var_mad),
+								fun=function(x,var_mad)
+								{
+									out=sum((x^2)/var_mad,na.rm=TRUE)
+									return(out)
+								})
 						
+						if(verbose) { print("HPC new wt...")}
+						wt=calc_hpc(chisqr,
+								fun=function(x)
+								{
+									bands=nlayers(x)
+									out=1-calc(chisqr,fun=function(x) { pchisq(x,bands) })
+									return(out)
+								})
+						
+						
+#						chisqr=calc(MAD,fun=function(x) { sum(x^2/var_mad) })
+#						wt=1-calc(chisqr,fun=function(x) { pchisq(x,bands) })
+					} else
+					{
+						chisqr=calc(MAD,fun=function(x) { sum(x^2/var_mad) })
+						wt=1-calc(chisqr,fun=function(x) { pchisq(x,bands) })
+					}
+				
 					delta = sum(abs(rho-oldrho))
 					oldrho = rho
 					if(verbose)
