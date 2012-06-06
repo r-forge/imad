@@ -512,7 +512,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 								fun=function(x)
 								{
 									bands=nlayers(x)
-									out=1-calc(chisqr,fun=function(x) { pchisq(x,bands) })
+									out=1-calc(x,fun=function(x) { pchisq(x,bands) })
 									return(out)
 								})
 						
