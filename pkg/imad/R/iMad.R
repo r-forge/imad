@@ -478,7 +478,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 #						V=calc_hpc(x=inDataSet2,fun=function(x,b,means_b) { as.vector(t(b)%*%(x-means_b)) }, 
 #								args=list(b=b,means_b=means_b) )
 #						
-						U=calc_hpc(x=inDataSet1,
+						V=calc_hpc(x=inDataSet1,
 							fun=function(x,b,means_b) 
 							{ 
 								x=getValues(x)
