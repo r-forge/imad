@@ -512,7 +512,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 						chisqr=calc_hpc(x=MAD,args=list(var_mad=var_mad),
 								fun=function(x,var_mad)
 								{
-									out1=(x^2)/var_mad
+									out1=calc(x,fun=function(x) { x^2 })
+									out2=out1/var_mad
 									out=calc(out1,
 										fun=function(x)
 										{
