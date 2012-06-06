@@ -31,10 +31,12 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	r_check <- crop(x, extent(x, r1=1, r2=1, c1=1,c2=2))
 	
 	if(!is.null(args)) {
-		r_check_function <- getValues(do.call(fun, c(r_check, args)))
+		r_check_function <- do.call(fun, c(r_check, args))
+		if(inherits(r_check_function,"Raster")) { r_check_function = getValues(r_check_function) }
 	} else
 	{
-		r_check_function <- getValues(fun(r_check)) 
+		r_check_function <- fun(r_check)
+		if(inherits(r_check_function,"Raster")) { r_check_function = getValues(r_check_function) }
 	}
 	
 	if(verbose) { print("Determining number of output bands...")}
