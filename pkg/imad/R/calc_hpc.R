@@ -115,7 +115,10 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 				cellStart=((cellFromRowCol(x,row=tr$row[i],col=1))-1)*outbands+1
 				cellEnd=((cellFromRowCol(x,row=tr$row2[i],col=ncol(x))))*outbands
 				# Disable transpose for BIL?
-				out[cellStart:cellEnd] <- as.vector(t(getValues(r)))
+				if(inherits(r, 'Raster')) { out[cellStart:cellEnd] <- as.vector(t(getValues(r))) }
+				else
+				{ out[cellStart:cellEnd] <- as.vector(t(r)) }
+#				out[cellStart:cellEnd] <- as.vector(t(getValues(r)))
 #				out[cellFromRow(x,tr$row[i]:tr$row2[i])] <- as.vector(getValues(r))
 				munmap(out)
 				return(NULL)
