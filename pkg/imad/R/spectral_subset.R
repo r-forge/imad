@@ -7,7 +7,7 @@ spectral_subset <- function(x,pos)
 		stop ("x must be a Raster* object...")
 	}
 	
-	if(class(pos)!="integer")
+	if(class(pos)!="integer" && class(pos)!="numeric" )
 	{
 		stop ("pos must be an integer vector...")
 	}
