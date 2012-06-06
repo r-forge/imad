@@ -453,33 +453,37 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	
 					if(verbose) { print(a) }
 					if(verbose) { print(means_a) }
-#					if(enable_snow)
-#					{
-##						U=calc_hpc(x=inDataSet1,fun=function(x,a,means_a) { as.vector(t(a)%*%(x-means_a)) }, 
-##								args=list(a=a,means_a=means_a))
-#						
-#						U=calc_hpc(x=inDataSet1,fun=function(x,a,means_a) { as.vector(a*(x-means_a)) }, 
+					if(enable_snow)
+					{
+#						U=calc_hpc(x=inDataSet1,fun=function(x,a,means_a) { as.vector(t(a)%*%(x-means_a)) }, 
 #								args=list(a=a,means_a=means_a))
-#						
-##						U=clusterR(x=inDataSet1,fun=function(x,a,means_a) { as.vector(t(a)%*%(x-means_a)) }, 
-##								args=list(a=a,means_a=means_a) )
-#					} else
-#					{
-						U=calc(inDataSet1,fun=function(x) { as.vector(t(a)*(x-means_a)) } )
-#					}
+						
+#						U=calc_hpc(x=inDataSet1,
+#							fun=function(x,a,means_a) 
+#							{ 
+#								out=(x-means_a)*a 
+#							}, 
+#							args=list(a=a,means_a=means_a))
+						U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
+					} else
+					{
+						U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
+					}
 					
 					means_b=means[(bands+1):(bands*2)]
-#					if(enable_snow)
-#					{
-##						V=calc_hpc(x=inDataSet2,fun=function(x,b,means_b) { as.vector(t(b)%*%(x-means_b)) }, 
-##								args=list(b=b,means_b=means_b) )
+					if(enable_snow)
+					{
+#						V=calc_hpc(x=inDataSet2,fun=function(x,b,means_b) { as.vector(t(b)%*%(x-means_b)) }, 
+#								args=list(b=b,means_b=means_b) )
 #						
 #						V=calc_hpc(x=inDataSet2,fun=function(x,b,means_b) { as.vector(b*(x-means_b)) }, 
 #								args=list(b=b,means_b=means_b) )
-#					} else
-#					{
+		
 						V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
-#					}
+					} else
+					{
+						V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
+					}
 					
 #					if(enable_snow)
 #					{
