@@ -462,7 +462,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 							fun=function(x,a,means_a) 
 							{ 
 								x=getValues(x)
-								out=as.vector(t(a)*(x-means_a))
+								out=as.vector(a%*%t(x-means_a))
 								return(out)
 							}, 
 							args=list(a=a,means_a=means_a))
@@ -482,7 +482,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 							fun=function(x,b,means_b) 
 							{ 
 								x=getValues(x)
-								out=as.vector(t(b)*(x-means_b))
+								out=as.vector(b%*%t(x-means_b))
 								return(out)
 							}, 
 							args=list(b=b,means_b=means_b))
