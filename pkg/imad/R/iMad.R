@@ -509,15 +509,15 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					if(enable_snow)
 					{
 						if(verbose) { print("HPC chisquare...")}
-						chisqr=calc_hpc(MAD,args=list(var_mad=var_mad),
+						chisqr=calc_hpc(x=MAD,args=list(var_mad=var_mad),
 								fun=function(x,var_mad)
 								{
-									out=sum((x^2)/var_mad,na.rm=TRUE)
+									out=sum(((x^2)/var_mad),na.rm=TRUE)
 									return(out)
 								})
 						
 						if(verbose) { print("HPC new wt...")}
-						wt=calc_hpc(chisqr,
+						wt=calc_hpc(x=chisqr,
 								fun=function(x)
 								{
 									bands=nlayers(x)
