@@ -218,6 +218,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			extent(mask1)=extent(inDataSet1)
 			extent(mask2)=extent(inDataSet1)
 		}
+		# This can be HPCed
 		mask=mask1*mask2
 	} else
 	{
@@ -238,6 +239,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			}
 			mask=mask2
 		}
+		# This can be HPCed
 		mask[mask==0] <- NA
 	}
 

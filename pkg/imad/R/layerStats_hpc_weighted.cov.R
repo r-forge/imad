@@ -64,19 +64,23 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 			means=layerStats_hpc(xw,'sum',na.rm=na.rm)/sumw
 #			sumw <- sumw - asSample
 			if(verbose) { print("sqrt(wt)...")}
-			w_sqrt = calc_hpc(x=w,fun=sqrt)
+#			w_sqrt = calc_hpc(x=w,fun=sqrt)
 #			x = stack(clusterMap(cl,fun=function(x,means,w_sqrt) { (x - means) * w_sqrt },
 #							x=raster_to_list(x),MoreArgs=list(means=means,w_sqrt=w_sqrt)))
 			if(verbose) { print("(x-means)*w_sqrt...")}
-			x=calc_hpc(x=stack(w_sqrt,x),args=list(means=means),
+			x=calc_hpc(stack(w,x),args=list(means=means),
 				fun=function(x,means)
 				{
 					nlayers_x=nlayers(x)
 					pos=2:nlayers_x
-					w_sqrt=raster(x,layer=1)
+					w=raster(x,layer=1)
 					x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
-					return((x-means)*w_sqrt)
-				}
+#					print(nlayers(x_image))
+#					calc()
+					out=(x_image-means)*calc(w,sqrt)
+					print(out)
+					return(out)
+				},verbose=verbose
 			)
 			
 		} else
@@ -112,10 +116,11 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 						rasteri=raster(x,layer=i)
 						rasterj=raster(x,layer=j)
 #						r <- raster(x,layer=i)*raster(x,layer=j)
-						r=calc_hpc(stack(list(rasteri,rasterj)),
+						r=calc_hpc(stack(rasteri,rasterj),
 								fun=function(x)
 								{
-									return(raster(x,layer=1)*raster(x,layer=2))
+									out=raster(x,layer=1)*raster(x,layer=2)
+									return(out)
 								})
 #						v <- cellStats(r, stat='sum', na.rm=na.rm) / sumw
 						v=layerStats_hpc(r,stat='sum',na.rm=na.rm)/sumw
