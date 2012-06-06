@@ -492,6 +492,11 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 #					{
 						MAD = U-V
 #					}	
+
+					if(verbose) { print(U) }
+					if(verbose) { print(V) }
+					if(verbose) { print(MAD) }
+
 					#     new weights	
 					if(verbose) { print("Generating new weights...")}
 					var_mad=t(2*(1-rho))
