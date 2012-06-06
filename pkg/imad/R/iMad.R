@@ -83,8 +83,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(!missing(pos))
 	{
 		if(verbose) { print("Subsetting bands...")}
-#		inDataSet1=stack(inDataSet1,bands=pos)
-#		inDataSet2=stack(inDataSet2,bands=pos)
 		inDataSet1=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=inDataSet1)))
 		inDataSet2=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=inDataSet2)))
 	}
@@ -96,8 +94,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(auto_extract_overlap)
 	{
 		if(verbose) { print("Extracting the overlap region...") }
-
-		# Not working yet, needs to check for the the filename + extension.
 		
 		if(missing(format))
 		{
@@ -114,14 +110,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 				!file.exists(output_inDataSet1_subset_full_filename) || !file.exists(output_inDataSet2_subset_full_filename))
 		{
 		# If the user does not want to reuse existing cropped datasets or if they don't exist...
-			# First check to see if they line up...
-		
-			# If not, run the extraction...
-#			overlaps=extract_overlap_rasters(inDataSet1,inDataSet2,
-#					filename1=output_inDataSet1_subset_filename,filename2=output_inDataSet2_subset_filename,
-#					verbose=verbose,format=format,datatype='FLT4S',...)
-#			inDataSet1=overlaps[[1]]
-#			inDataSet2=overlaps[[2]]
 			inDataSet1=crop(inDataSet1,inDataSet2,filename=output_inDataSet1_subset_filename,datatype='FLT4S',verbose=verbose,...)
 			inDataSet2=crop(inDataSet2,inDataSet1,filename=output_inDataSet2_subset_filename,datatype='FLT4S',verbose=verbose,...)
 		} else
@@ -135,27 +123,16 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		# Now crop the masks and add them together.
 		if((!missing(mask1) || !missing(mask2)) && auto_extract_overlap)
 		{
-#			if(verbose) { print(class(mask1)) }
 			if(!missing(mask1) && !(class(mask1)=="numeric"))
 			{
 				if(verbose) { print("Cropping mask1...") }
 				mask1=crop(mask1,inDataSet1)
-#				mask1_overlap=extract_overlap_rasters(mask1,inDataSet2,
-#						filename1=output_inDataSet1_subset_mask_filename,
-#						raster2_crop=FALSE,
-#						verbose=verbose,format=format,...)
-#				mask1=mask1_overlap
 			}
 			
 			if(!missing(mask2) && !(class(mask2)=="numeric"))
 			{
 				if(verbose) { print("Cropping mask2...") }
 				mask2=crop(mask2,inDataSet2)
-#				mask2_overlap=extract_overlap_rasters(inDataSet1,mask2,
-#						filename2=output_inDataSet2_subset_mask_filename,
-#						raster1_crop=FALSE,
-#						verbose=verbose,format=format,...)
-#				mask2=mask2_overlap
 			}
 		}
 		
@@ -283,9 +260,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 				inDataSet2=mask(x=inDataSet2,mask=mask,filename=output_inDataSet2_masked,...)
 			}
 		}
-
-#		inDataSet1 <- inDataSet1*mask
-#		inDataSet2 <- inDataSet2*mask
 	}
 	
 	if(verbose) { print("Creating initial weighting raster and stacking inDataSets...")}
@@ -317,10 +291,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		{
 			print(paste("Iteration:",iter))
 		}
-		
-		# This needs to be swapped with "layerStats" in raster
-		
-#		sigma_means=cov.wt.raster(dm,wt)
 
 		if(enable_snow)
 		{
@@ -350,14 +320,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			s22 = sigma[(bands+1):(2*bands),(bands+1):(2*bands)]
 			s12 = sigma[1:(bands),(bands+1):(2*bands)]
 			s21 = sigma[(bands+1):(2*bands),1:(bands)]
-			
-			# Mods to include the penalization function.  Comment this out if this chokes.
-		#		s11 = (1-lam)*S11 + lam*Omega_L
-		#		s22 = (1-lam)*S22 + lam*Omega_L
-#			if(lam>0) {
-#				s11 = (1-lam)*S11 + lam*Omega_L
-#				s22 = (1-lam)*S22 + lam*Omega_L
-#			}
 
 			if(verbose) { print("Calculating generalized eigenvalues and eigenvectors...")}		
 			lama_a=Rdggev(JOBVL=F,JOBVR=T,A=s12%*%solve(s22)%*%s21,B=s11)
@@ -409,20 +371,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			{
 				# normalize dispersions   
 	
-	#a2=diag_matrix(transpose(A)##A)
-#				a2=diag(t(a)%*%a)
-#				b2=diag(t(b)%*%b)
-#				sigma2=sqrt((2-lam*(a2*b2))/(1-lam-2*mu))
-#				rho=mu*(1-lam)/sqrt((1-lam*a2)*(1-lam*b2))
-#				sigMads
-	#b2=diag_matrix(transpose(B)##B) 
-	#sigma = sqrt( (2-lam*(a2+b2))/(1-lam)-2*mu )
-	#rho=mu*(1-lam)/sqrt( (1-lam*a2)*(1-lam*b2) )     
-	#
-	#sigMads = ones##sigma 
-	#means1  = ones##means[0:num_bands-1]
-	#means2  = ones##means[num_bands:*]
-	
 				tmp1=t(a)%*%s11%*%a
 				tmp2=1/(sqrt(diag(tmp1)))
 				tmp3=t(array(tmp2,c(bands,length(tmp2))))
@@ -454,10 +402,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					if(verbose) { print(a) }
 					if(verbose) { print(means_a) }
 					if(enable_snow)
-					{
-#						U=calc_hpc(x=inDataSet1,fun=function(x,a,means_a) { as.vector(t(a)%*%(x-means_a)) }, 
-#								args=list(a=a,means_a=means_a))
-						
+					{					
 						U=calc_hpc(x=inDataSet1,
 							fun=function(x,a,means_a) 
 							{ 
@@ -466,7 +411,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 								return(out)
 							}, 
 							args=list(a=a,means_a=means_a))
-#						U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
+
 					} else
 					{
 						U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
@@ -474,10 +419,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					
 					means_b=means[(bands+1):(bands*2)]
 					if(enable_snow)
-					{
-#						V=calc_hpc(x=inDataSet2,fun=function(x,b,means_b) { as.vector(t(b)%*%(x-means_b)) }, 
-#								args=list(b=b,means_b=means_b) )
-#						
+					{					
 						V=calc_hpc(x=inDataSet1,
 							fun=function(x,b,means_b) 
 							{ 
@@ -486,7 +428,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 								return(out)
 							}, 
 							args=list(b=b,means_b=means_b))
-#						V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
 					} else
 					{
 						V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
@@ -537,10 +478,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 									out=1-pchisq(x,bands)
 									return(out)
 								})
-						
-						
-#						chisqr=calc(MAD,fun=function(x) { sum(x^2/var_mad) })
-#						wt=1-calc(chisqr,fun=function(x) { pchisq(x,bands) })
+						wt=mask_hpc(wt,mask)
 					} else
 					{
 						chisqr=calc(MAD,fun=function(x) { sum(x^2/var_mad) })
