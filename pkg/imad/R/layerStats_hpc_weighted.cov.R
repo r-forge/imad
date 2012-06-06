@@ -75,8 +75,6 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 					pos=2:nlayers_x
 					w=raster(x,layer=1)
 					x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
-#					print(nlayers(x_image))
-#					calc()
 					out=(x_image-means)*calc(w,sqrt)
 					print(out)
 					return(out)

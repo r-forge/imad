@@ -458,13 +458,15 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 #						U=calc_hpc(x=inDataSet1,fun=function(x,a,means_a) { as.vector(t(a)%*%(x-means_a)) }, 
 #								args=list(a=a,means_a=means_a))
 						
-#						U=calc_hpc(x=inDataSet1,
-#							fun=function(x,a,means_a) 
-#							{ 
-#								out=(x-means_a)*a 
-#							}, 
-#							args=list(a=a,means_a=means_a))
-						U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
+						U=calc_hpc(x=inDataSet1,
+							fun=function(x,a,means_a) 
+							{ 
+								x=getValues(x)
+								out=as.vector(t(a)%*%(x-means_a))
+								return(out)
+							}, 
+							args=list(a=a,means_a=means_a))
+#						U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
 					} else
 					{
 						U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
@@ -476,26 +478,34 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 #						V=calc_hpc(x=inDataSet2,fun=function(x,b,means_b) { as.vector(t(b)%*%(x-means_b)) }, 
 #								args=list(b=b,means_b=means_b) )
 #						
-#						V=calc_hpc(x=inDataSet2,fun=function(x,b,means_b) { as.vector(b*(x-means_b)) }, 
-#								args=list(b=b,means_b=means_b) )
-		
-						V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
+						U=calc_hpc(x=inDataSet1,
+							fun=function(x,b,means_b) 
+							{ 
+								x=getValues(x)
+								out=as.vector(t(b)%*%(x-means_b))
+								return(out)
+							}, 
+							args=list(b=b,means_b=means_b))
+#						V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
 					} else
 					{
 						V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
 					}
 					
-#					if(enable_snow)
-#					{
-#						MAD=calc_hpc(x=stack(U,V),
-#							fun=function(x,b1,b2)
-#							{
-#								(raster(x,layer=b1)-raster(x,layer=b2))
-#							},args=list(b1=1,b2=2))
-#					} else
-#					{
+					if(enable_snow)
+					{
+						MAD=calc_hpc(x=stack(U,V),
+							fun=function(x)
+							{
+								U=spectral_subset(x,(1:(nlayers(x)/2)))							
+								V=spectral_subset(x,((nlayers(x)/2+1):(nlayers(x))))
+								out=U-V
+								return(out)
+							})
+					} else
+					{
 						MAD = U-V
-#					}	
+					}	
 
 					if(verbose) { print(U) }
 					if(verbose) { print(V) }
@@ -513,14 +523,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 						chisqr=calc_hpc(x=MAD,args=list(var_mad=var_mad),
 								fun=function(x,var_mad)
 								{
-									out1=calc(x,fun=function(x) { x^2 })
-									out2=out1/var_mad
-									out=calc(out2,
-										fun=function(x)
-										{
-											x <- rowSums(x,na.rm=FALSE)
-											return(x)
-										})
+									x=getValues(x)
+									out=sum(x^2/var_mad,na.rm=TRUE)
 									return(out)
 								})
 						
@@ -529,7 +533,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 								fun=function(x)
 								{
 									bands=nlayers(x)
-									out=1-calc(x,fun=function(x) { pchisq(x,bands) })
+									x=getValues(x)
+									out=pchisq(x,bands)
 									return(out)
 								})
 						
