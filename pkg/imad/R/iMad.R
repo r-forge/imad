@@ -515,7 +515,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 								{
 									out1=calc(x,fun=function(x) { x^2 })
 									out2=out1/var_mad
-									out=calc(out1,
+									out=calc(out2,
 										fun=function(x)
 										{
 											x <- rowSums(x,na.rm=FALSE)
