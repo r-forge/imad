@@ -66,7 +66,30 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(missing(output_basename)) stop ("output_basename must be set...")
 	
 	# End pre-checks.
-
+	
+	# Figure out if we can run this in memory.
+	inmemory_layers=
+			# inDataSet1 (subsetted)
+			length(pos) +
+			# inDataSet2 (subsetted)
+			length(pos) +
+			# mask1
+			1 +
+			# mask2
+			1 +
+			# wt
+			1 +
+			# dm
+			length(pos)*2 +
+			# U --> probably fixable
+			length(pos) +
+			# V --> probably fixable
+			length(pos) +
+			# MAD
+			length(pos) +
+			# chisqr (I don't know if this is right) --> probably fixable
+			1
+	
 	# Setup output filenames.
 	output_inDataSet1_subset_filename=paste(output_basename,"_inDataSet1_overlap",sep="")
 	output_inDataSet2_subset_filename=paste(output_basename,"_inDataSet2_overlap",sep="")
@@ -74,10 +97,9 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	output_inDataSet2_subset_mask_filename=paste(output_basename,"_inDataSet2_mask_overlap",sep="")
 	output_inDataSet1_masked=paste(output_basename,"_inDataSet1_masked",sep="")
 	output_inDataSet2_masked=paste(output_basename,"_inDataSet2_masked",sep="")
-	
-	
 	output_MAD_filename=paste(output_basename,"_iMAD",sep="")
 	output_chisqr_filename=paste(output_basename,"_iMAD_chisqr",sep="")
+
 	
 ##### Subset out bands if needed.
 	if(!missing(pos))
@@ -262,7 +284,13 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		}
 	}
 	
+
+
+	
+	
 	if(verbose) { print("Creating initial weighting raster and stacking inDataSets...")}
+	
+	# IMAGE, nb=1
 	if(enable_snow)
 	{
 		wt = calc_hpc(raster(inDataSet1,layer=1),fun=function(x) { x*0+1 })	
@@ -273,6 +301,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		wt = raster(inDataSet1,layer=1)*0+1
 	}
 	
+	# IMAGE, nb=nlayers(inDataSet1)+nlayers(inDataSet2)
 	dm = stack(inDataSet1,inDataSet2)
 	
 	delta = 1.0
@@ -395,6 +424,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 				} else
 				{
 					#     canonical and MAD variates
+# IMAGE: U+V+MAD = 3 x nlayers(inDataSet1); probably could be pulled together as a single function
 					if(verbose) { print("Calculating canonical and MAD variates...")}
 					means_a=means[1:bands]
 					# Experimental clusterR

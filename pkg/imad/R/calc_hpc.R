@@ -4,10 +4,8 @@
 
 calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FALSE,verbose=FALSE,...) {
 	require("raster")
-	require("snow")
-	require("mmap")
-	require("ff")
-	
+	require("snowfall")
+		
 	# Do some file checks up here.
 	
 	if(verbose) { print("Setting up cluster...")}
@@ -18,8 +16,15 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	} else
 	{
 		if (is.null(cl)) {
-			cl <- getCluster()
-			on.exit( returnCluster() )
+			# Check to see if a cluster is running
+			if(sfIsRunning())
+			{
+				cl <- sfGetCluster()
+			} else
+			{
+				cl <- beginCluster()
+				cl <- getCluster()
+			}
 		}
 		nodes <- length(cl)
 	}
@@ -39,6 +44,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 		if(inherits(r_check_function,"Raster")) { r_check_function = getValues(r_check_function) }
 	}
 	
+	# Next we do a check for the number of output bands.  A matrix output indicates a multi-band output.
 	if(verbose) { print("Determining number of output bands...")}
 	if(class(r_check_function)=="numeric" || class(r_check_function)=="logical")
 	{
@@ -47,23 +53,40 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	{
 		outbands=dim(r_check_function)[2]
 	}
-	
 	if(verbose) { print(outbands) }
 	
-	if(verbose) { print("Creating output file with ff...")}
-	outdata_ncells=nrow(x)*ncol(x)*outbands
-	if(filename=="")
-	{	
-		filename <- tempfile()
-	} 
-	
-	if(verbose) { print(outdata_ncells) }
-	if(verbose) { print(filename) }
-	
-	# How about using ff?
-	out<-ff(vmode="double",length=outdata_ncells,filename=filename)
-	finalizer(out) <- close
-	close(out)
+	# The algorithm works differently if it processes in memory, so we setup the output here.	
+	if(canProcessInMemory(raster(x),n=outbands))
+	{
+		inmemory=TRUE
+		if(outbands > 1)
+		{
+			outraster <- brick(x,nl=outbands)
+		} else
+		{
+			outraster <- raster(x)
+		}
+#		out<-array(dim=c(nrow(x),ncol(x),outbands))
+	} else
+	{
+		inmemory=FALSE
+		if(verbose) { print("Creating output file with ff...")}
+		require("ff")
+		require("mmap")
+		
+		outdata_ncells=nrow(x)*ncol(x)*outbands
+		if(verbose) { print(outdata_ncells) }
+		
+		if(filename=="")
+		{	
+			filename <- tempfile()
+		} 
+		if(verbose) { print(filename) }
+		# How about using ff?
+		out<-ff(vmode="double",length=outdata_ncells,filename=filename)
+		finalizer(out) <- close
+		close(out)	
+	}
 	
 	if(verbose) { print("Determining optimal block size...")}
 	m <- max(1, round(m))
@@ -79,32 +102,32 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	
 	i=1:tr$n
 	
-	if(disable_cl)
-	# Use only for debugging.
-	{
-		mapply(function(i,fun,args,x,tr,filename,outbands) 
-			{
-				r <- crop(x, extent(x, r1=tr$row[i], r2=tr$row2[i], c1=1, c2=ncol(x)))
-				if(!is.null(args)) {
-					r <- fun(r) 
-				} else
-				{
-					r <- do.call(fun, c(r, args))
-				}
-				out <- mmap(filename,mode=real64())
-				cellStart=((cellFromRowCol(x,row=tr$row[i],col=1))-1)*outbands+1
-				cellEnd=((cellFromRowCol(x,row=tr$row2[i],col=ncol(x))))*outbands
-				out[cellStart:cellEnd] <- as.vector(t(getValues(r)))
-#				out[cellFromRow(x,tr$row[i]:tr$row2[i])] <- as.vector(getValues(r))
-				munmap(out)
-				return(NULL)
-			},
-			i,MoreArgs=list(fun=fun,x=x,tr=tr,args=args,filename=filename,outbands=outbands))
-
-	} else
+#	if(disable_cl)
+#	# Use only for debugging.
+#	{
+#		mapply(function(i,fun,args,x,tr,filename,outbands) 
+#			{
+#				r <- crop(x, extent(x, r1=tr$row[i], r2=tr$row2[i], c1=1, c2=ncol(x)))
+#				if(!is.null(args)) {
+#					r <- fun(r) 
+#				} else
+#				{
+#					r <- do.call(fun, c(r, args))
+#				}
+#				out <- mmap(filename,mode=real64())
+#				cellStart=((cellFromRowCol(x,row=tr$row[i],col=1))-1)*outbands+1
+#				cellEnd=((cellFromRowCol(x,row=tr$row2[i],col=ncol(x))))*outbands
+#				out[cellStart:cellEnd] <- as.vector(t(getValues(r)))
+##				out[cellFromRow(x,tr$row[i]:tr$row2[i])] <- as.vector(getValues(r))
+#				munmap(out)
+#				return(NULL)
+#			},
+#			i,MoreArgs=list(fun=fun,x=x,tr=tr,args=args,filename=filename,outbands=outbands))
+#
+#	} else
 	{
 		if(verbose) { print("Starting the cluster function...")}
-		clusterMap(cl,function(fun,i,args,x,tr,filename,outbands) 
+		out <- clusterMap(cl,function(fun,i,args,x,tr,filename,outbands,inmemory,verbose) 
 			{
 				r <- crop(x, extent(x, r1=tr$row[i], r2=tr$row2[i], c1=1, c2=ncol(x)))
 				if(is.null(args)) {
@@ -113,36 +136,56 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 				{
 					r <- do.call(fun, c(r, args))
 				}
-				if(verbose) { print(class(r)) }
-				out <- mmap(filename,mode=real64())
-				cellStart=((cellFromRowCol(x,row=tr$row[i],col=1))-1)*outbands+1
-				cellEnd=((cellFromRowCol(x,row=tr$row2[i],col=ncol(x))))*outbands
-				# Disable transpose for BIL?
-				if(inherits(r, 'Raster')) { out[cellStart:cellEnd] <- as.vector(t(getValues(r))) }
-				else
-				{ out[cellStart:cellEnd] <- as.vector(t(r)) }
-#				out[cellStart:cellEnd] <- as.vector(t(getValues(r)))
-#				out[cellFromRow(x,tr$row[i]:tr$row2[i])] <- as.vector(getValues(r))
-				munmap(out)
-				return(NULL)
+#				if(verbose) { print(class(r)) }
+#				if(verbose) { print(dim(r)) }
+				
+				if(inmemory)
+				{
+					if(inherits(r, 'Raster'))
+					{
+						r=getValues(r)
+					}
+					return(r)
+				} else
+				{
+					# This performs parallel writes
+					cellStart=((cellFromRowCol(x,row=tr$row[i],col=1))-1)*outbands+1
+					cellEnd=((cellFromRowCol(x,row=tr$row2[i],col=ncol(x))))*outbands
+					# Disable transpose for BIL?
+					out <- mmap(filename,mode=real64())
+					if(inherits(r, 'Raster')) 
+						{ out[cellStart:cellEnd] <- as.vector(t(getValues(r))) }
+					else
+						{ out[cellStart:cellEnd] <- as.vector(t(r)) }
+					munmap(out)
+					return(NULL)
+				}
 			},
-			i,MoreArgs=list(fun=fun,x=x,tr=tr,args=args,filename=filename,outbands=outbands))
-	}
+			i,MoreArgs=list(fun=fun,x=x,tr=tr,args=args,filename=filename,outbands=outbands,inmemory=inmemory,
+					verbose=verbose))
+#	}
 		
-	# Let's see if we can trick raster into making us a proper header...
-	if(outbands > 1) 
-	{ 
-		reference_raster=brick(raster(x,layer=1),nl=outbands) 
+
+	if(inmemory)
+	{
+		outraster=setValues_hpc(out_raster,unlist(out))
 	} else
 	{
-		if(nlayers(x) > 1) { reference_raster=raster(x,layer=1) } else
-		{ reference_raster=x }	
+		# Let's see if we can trick raster into making us a proper header...
+		if(outbands > 1) 
+		{ 
+			reference_raster=brick(raster(x,layer=1),nl=outbands) 
+		} else
+		{
+			if(nlayers(x) > 1) { reference_raster=raster(x,layer=1) } else
+			{ reference_raster=x }	
+		}
+		outraster_base <- writeStart(reference_raster,filename=paste(filename,".grd",sep=""),datatype="FLT8S",bandorder="BIP",...)
+		suppressWarnings(outraster_base <- writeStop(outraster_base))
+		file.remove(paste(filename,".gri",sep=""))
+		file.rename(filename,paste(filename,".gri",sep=""))
+		outraster=brick(paste(filename,".grd",sep=""))
 	}
-	outraster_base <- writeStart(reference_raster,filename=paste(filename,".grd",sep=""),datatype="FLT8S",bandorder="BIP",...)
-	suppressWarnings(outraster_base <- writeStop(outraster_base))
-	file.remove(paste(filename,".gri",sep=""))
-	file.rename(filename,paste(filename,".gri",sep=""))
-	outraster=brick(paste(filename,".grd",sep=""))
 	return(outraster)
 }
 
