@@ -21,10 +21,12 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 			if(sfIsRunning())
 			{
 				cl <- sfGetCluster()
+				cluster_shutdown=FALSE
 			} else
 			{
 				cl <- beginCluster()
 				cl <- getCluster()
+				cluster_shutdown=TRUE
 			}
 		}
 		nodes <- length(cl)
@@ -59,6 +61,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	# The algorithm works differently if it processes in memory, so we setup the output here.	
 	if(canProcessInMemory(raster(x),n=outbands))
 	{
+		if(verbose) { print("Processing in memory...") }
 		inmemory=TRUE
 		if(outbands > 1)
 		{
@@ -70,6 +73,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 #		out<-array(dim=c(nrow(x),ncol(x),outbands))
 	} else
 	{
+		if(verbose) { print("Not processing in memory...") }
 		inmemory=FALSE
 		if(verbose) { print("Creating output file with ff...")}
 		require("ff")
@@ -188,6 +192,9 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 		file.rename(filename,paste(filename,".gri",sep=""))
 		outraster=brick(paste(filename,".grd",sep=""))
 	}
+	
+	if(cluster_shutdown) { endCluster() }
+	
 	return(outraster)
 }
 
