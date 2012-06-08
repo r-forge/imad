@@ -20,7 +20,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 			# Check to see if a cluster is running
 			if(sfIsRunning())
 			{
-				cl <- sfGetCluster()
+				cl <- getCluster()
 				cluster_shutdown=FALSE
 			} else
 			{
