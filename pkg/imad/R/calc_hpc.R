@@ -170,7 +170,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 
 	if(inmemory)
 	{
-		outraster=setValues_hpc(out_raster,unlist(out))
+		outraster=setValues_hpc(outraster,unlist(out))
 	} else
 	{
 		# Let's see if we can trick raster into making us a proper header...
