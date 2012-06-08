@@ -2,7 +2,8 @@
 # Original code by Robert Hijimans, mmap integration by Jonathan Greenberg
 #' @export
 
-calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FALSE,verbose=FALSE,...) {
+calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FALSE,verbose=FALSE,...) 
+{
 	require("raster")
 	require("snowfall")
 		
@@ -91,7 +92,8 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	if(verbose) { print("Determining optimal block size...")}
 	m <- max(1, round(m))
 	tr <- blockSize(x, minblocks=nodes*m )
-	if (tr$n < nodes) {
+	if (tr$n < nodes) 
+	{
 		nodes <- tr$n
 	}
 	
@@ -125,7 +127,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 #			i,MoreArgs=list(fun=fun,x=x,tr=tr,args=args,filename=filename,outbands=outbands))
 #
 #	} else
-	{
+#	{
 		if(verbose) { print("Starting the cluster function...")}
 		out <- clusterMap(cl,function(fun,i,args,x,tr,filename,outbands,inmemory,verbose) 
 			{

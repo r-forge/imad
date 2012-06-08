@@ -29,3 +29,4 @@ Collate:
     'layerStats_hpc_weighted.cov.R'
     'mask_hpc.R'
     'spectral_subset.R'
+    'setValues_hpc.R'
