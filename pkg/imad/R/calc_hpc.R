@@ -18,16 +18,16 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	{
 		if (is.null(cl)) {
 			# Check to see if a cluster is running
-			if(sfIsRunning())
-			{
-				cl <- getCluster()
-				cluster_shutdown=FALSE
-			} else
-			{
+#			if(sfIsRunning())
+#			{
+#				cl <- getCluster()
+#				cluster_shutdown=FALSE
+#			} else
+#			{
 				cl <- beginCluster()
 				cl <- getCluster()
-				cluster_shutdown=TRUE
-			}
+#				cluster_shutdown=TRUE
+#			}
 		}
 		nodes <- length(cl)
 	}
