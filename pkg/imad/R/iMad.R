@@ -53,10 +53,15 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		auto_extract_overlap=TRUE,reuse_existing_raster=TRUE,force_extent=TRUE,
 		enable_snow=FALSE,cl=NULL,
 		verbose=FALSE,
+		timing=FALSE,
 		...)
 {
 	require("raster")		
 	if(verbose) { print("Verbose mode enabled...")}
+	if(timing) { 
+		print("Timing enabled...")
+		previous_time=proc.time()
+	}
 	
 	# Do some pre-checks up here.
 	if(verbose) { print("Initial checks...")}
@@ -105,12 +110,19 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(!missing(pos))
 	{
 		if(verbose) { print("Subsetting bands...")}
-		inDataSet1=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=inDataSet1)))
-		inDataSet2=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=inDataSet2)))
+		inDataSet1=spectral_subset(inDataSet1,pos)
+		inDataSet2=spectral_subset(inDataSet2,pos)
 	}
-	
 	bands=nlayers(inDataSet1)
 	pos=0:(bands-1)
+
+	if(timing) { 
+		new_time=proc.time()
+		print("Subsetting time:")
+		print(previous_time-new_time)
+		previous_time=new_time
+	}
+	
 	
 ##### Extract overlap regions
 	if(auto_extract_overlap)
@@ -122,18 +134,27 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			format="raster"
 		}
 		
-		output_inDataSet1_subset_full_filetype <- raster:::.filetype(format=format, filename=output_inDataSet1_subset_filename)
-		output_inDataSet2_subset_full_filetype <- raster:::.filetype(format=format, filename=output_inDataSet2_subset_filename)
+		# Check for existing files
+		output_inDataSet1_subset_full_filetype <- 
+				raster:::.filetype(format=format, filename=output_inDataSet1_subset_filename)
+		output_inDataSet2_subset_full_filetype <- 
+				raster:::.filetype(format=format, filename=output_inDataSet2_subset_filename)
+		output_inDataSet1_subset_full_filename <- 
+				raster:::.getExtension(output_inDataSet1_subset_filename, output_inDataSet1_subset_full_filetype)
+		output_inDataSet2_subset_full_filename <- 
+				raster:::.getExtension(output_inDataSet2_subset_filename, output_inDataSet2_subset_full_filetype)
 		
-		output_inDataSet1_subset_full_filename <- raster:::.getExtension(output_inDataSet1_subset_filename, output_inDataSet1_subset_full_filetype)
-		output_inDataSet2_subset_full_filename <- raster:::.getExtension(output_inDataSet2_subset_filename, output_inDataSet2_subset_full_filetype)
-		
-		if(!reuse_existing_raster || 
-				!file.exists(output_inDataSet1_subset_full_filename) || !file.exists(output_inDataSet2_subset_full_filename))
+		if(
+			!reuse_existing_raster || 
+			!file.exists(output_inDataSet1_subset_full_filename) || 
+			!file.exists(output_inDataSet2_subset_full_filename)
+		)
 		{
 		# If the user does not want to reuse existing cropped datasets or if they don't exist...
-			inDataSet1=crop(inDataSet1,inDataSet2,filename=output_inDataSet1_subset_filename,datatype='FLT4S',verbose=verbose,...)
-			inDataSet2=crop(inDataSet2,inDataSet1,filename=output_inDataSet2_subset_filename,datatype='FLT4S',verbose=verbose,...)
+			inDataSet1=crop(inDataSet1,inDataSet2,filename=output_inDataSet1_subset_filename,
+				datatype='FLT4S',verbose=verbose,...)
+			inDataSet2=crop(inDataSet2,inDataSet1,filename=output_inDataSet2_subset_filename,
+				datatype='FLT4S',verbose=verbose,...)
 		} else
 		{
 		# Otherwise use the existing cropped datasets.
@@ -157,14 +178,26 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 				mask2=crop(mask2,inDataSet2)
 			}
 		}
-		
-		
 	} else
 	{
 		if(verbose) { print("Not extracting the overlap region...") }
-		# Should check for overlap here...
+		
+		cols=ncol(inDataSet1)
+		rows=nrow(inDataSet1)
+		
+		cols2=ncol(inDataSet2)
+		rows2=nrow(inDataSet2)
+		
+		if(cols != cols2 || rows != rows2) 
+			{ stop("Input rows and columns must be the same, try using auto_extract_overlap=TRUE...") }
 	}
-
+	
+	if(timing) { 
+		new_time=proc.time()
+		print("Overlap extraction time:")
+		print(previous_time-new_time)
+		previous_time=new_time
+	}
 	
 ##### Fix extents if need be...
 
@@ -242,14 +275,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		mask[mask==0] <- NA
 	}
 
-	cols=ncol(inDataSet1)
-	rows=nrow(inDataSet1)
-	
-	cols2=ncol(inDataSet2)
-	rows2=nrow(inDataSet2)
-	
-	if(cols != cols2 || rows != rows2) stop("Input rows and columns must be the same, try using auto_extract_overlap=TRUE...")
-	
 	if(class(mask)!="logical")
 	{
 		if(verbose) { print("Masking...") }
@@ -283,10 +308,13 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			}
 		}
 	}
-	
 
-
-	
+	if(timing) { 
+		new_time=proc.time()
+		print("Masking time:")
+		print(previous_time-new_time)
+		previous_time=new_time
+	}
 	
 	if(verbose) { print("Creating initial weighting raster and stacking inDataSets...")}
 	
@@ -294,15 +322,27 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(enable_snow)
 	{
 		wt = calc_hpc(raster(inDataSet1,layer=1),fun=function(x) { x*0+1 })	
-		
 		wt = mask_hpc(wt,mask)
 	} else
 	{
 		wt = raster(inDataSet1,layer=1)*0+1
 	}
 	
+	if(timing) { 
+		new_time=proc.time()
+		print("Weight creation time:")
+		print(previous_time-new_time)
+		previous_time=new_time
+	}
+	
 	# IMAGE, nb=nlayers(inDataSet1)+nlayers(inDataSet2)
 	dm = stack(inDataSet1,inDataSet2)
+	if(timing) { 
+		new_time=proc.time()
+		print("dm creation time:")
+		print(previous_time-new_time)
+		previous_time=new_time
+	}
 	
 	delta = 1.0
 	oldrho = array(data=0,dim=bands)
@@ -312,7 +352,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 # Mods to include the penalization function.  Comment this out if this chokes.
 #	if(lam>0) { Omega_L = diag(bands) }
 
-	
 ### MAIN LOOP
 	while(delta > 0.001 && iter < maxiter && !(ab_nan))
 	{
@@ -331,6 +370,13 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			sigma_means=layerStats(dm,'weighted.cov',wt,na.rm=TRUE)
 		}	
 		
+		if(timing) { 
+			new_time=proc.time()
+			print("sigma_means creation time:")
+			print(previous_time-new_time)
+			previous_time=new_time
+		}
+		
 		if(verbose) { print(sigma_means) }
 		
 		sigma=sigma_means[[1]]
@@ -341,199 +387,194 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			if(verbose)
 			{
 				print("Possible numerical precision problem with sigma or means, exiting loop and using the current results...")
-				ab_nan=TRUE
 			}
-		} else
-		{	
-			s11 = sigma[1:(bands),1:(bands)]
-			s22 = sigma[(bands+1):(2*bands),(bands+1):(2*bands)]
-			s12 = sigma[1:(bands),(bands+1):(2*bands)]
-			s21 = sigma[(bands+1):(2*bands),1:(bands)]
-
-			if(verbose) { print("Calculating generalized eigenvalues and eigenvectors...")}		
-			lama_a=Rdggev(JOBVL=F,JOBVR=T,A=s12%*%solve(s22)%*%s21,B=s11)
-			a=lama_a$VR
-				lama=lama_a$GENEIGENVALUES
-				
-			lamb_b=Rdggev(JOBVL=F,JOBVR=T,A=s21%*%solve(s11)%*%s12,B=s22)
-			b=lamb_b$VR
-			lamb=lamb_b$GENEIGENVALUES
-	
-			# Eigenvalues, ranked largest to smallest
-			idx=rank(lama)
-			a=a[,idx]
-				
-			idx=rank(lamb)
-			b=b[,idx]
-	
-	# Penalization stuff needs to go somewhere around here
-	# IDL Code:
-	
-	
-	#
-	#; stopping criterion
-	#delta = max(abs(rho-old_rho))
-	#old_rho = rho
-	#
-	#; ensure sum of positive correlations between X and U is positive
-	#; their covariance matrix is S11##A
-	#invsig_x = diag_matrix(1/sqrt(diag_matrix(S11)))
-	#sum = total(invsig_x##S11##A,2)
-	#				A = A##diag_matrix(sum/abs(sum))   
-	#
-	#; ensure positive correlation between each pair of canonical variates
-	#cov = diag_matrix(transpose(A)##S12##B)
-	#B = B##diag_matrix(cov/abs(cov))
-	#
-	#if iter gt 0 and iter eq niter then goto, done 
-			
-			#mu = sqrt(mu2)  
-			rho=sqrt(lamb[idx])	
-#			mu=rho
-			
-			# Fix for near-perfect correlations
-			if(abs(sum(rho)-bands) < corr_thresh*bands)
-			{
-				print("Perfect correlation, exiting...")
-				ab_nan=TRUE
-			} else
-			{
-				# normalize dispersions   
-	
-				tmp1=t(a)%*%s11%*%a
-				tmp2=1/(sqrt(diag(tmp1)))
-				tmp3=t(array(tmp2,c(bands,length(tmp2))))
-				a=a*tmp3
-					
-				tmp1=t(b)%*%s22%*%b
-				tmp2=1/(sqrt(diag(tmp1)))
-				tmp3=t(array(tmp2,c(bands,length(tmp2))))
-				b=b*tmp3
-		
-				# assure positive correlation
-				tmp=diag(t(a)%*%s12%*%b)
-				b=b%*%diag(tmp/abs(tmp))
-							
-				if(is.nan(mean(a)) || is.nan(mean(b)))
-				{
-					if(verbose)
-					{
-						print("Possible numerical precision problem with a or b, exiting loop and using the current results...")
-						ab_nan=TRUE
-					}
-				} else
-				{
-					#     canonical and MAD variates
-# IMAGE: U+V+MAD = 3 x nlayers(inDataSet1); probably could be pulled together as a single function
-					if(verbose) { print("Calculating canonical and MAD variates...")}
-					means_a=means[1:bands]
-					# Experimental clusterR
-	
-					if(verbose) { print(a) }
-					if(verbose) { print(means_a) }
-					if(enable_snow)
-					{					
-						U=calc_hpc(x=inDataSet1,
-							fun=function(x,a,means_a) 
-							{ 
-								x=getValues(x)
-								out=as.vector(a%*%t(x-means_a))
-								return(out)
-							}, 
-							args=list(a=a,means_a=means_a))
-
-					} else
-					{
-						U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
-					}
-					
-					means_b=means[(bands+1):(bands*2)]
-					if(enable_snow)
-					{					
-						V=calc_hpc(x=inDataSet1,
-							fun=function(x,b,means_b) 
-							{ 
-								x=getValues(x)
-								out=as.vector(b%*%t(x-means_b))
-								return(out)
-							}, 
-							args=list(b=b,means_b=means_b))
-					} else
-					{
-						V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
-					}
-					
-					if(enable_snow)
-					{
-						MAD=calc_hpc(x=stack(U,V),
-							fun=function(x)
-							{
-								U=spectral_subset(x,(1:(nlayers(x)/2)))							
-								V=spectral_subset(x,((nlayers(x)/2+1):(nlayers(x))))
-								out=U-V
-								return(out)
-							})
-					} else
-					{
-						MAD = U-V
-					}	
-
-					if(verbose) { print(U) }
-					if(verbose) { print(V) }
-					if(verbose) { print(MAD) }
-
-					#     new weights	
-					if(verbose) { print("Generating new weights...")}
-					var_mad=2*(1-rho)
-					
-					if(verbose) { print(var_mad)}
-					
-					if(enable_snow)
-					{
-						if(verbose) { print("HPC chisquare...")}
-						chisqr=calc_hpc(x=MAD,args=list(var_mad=var_mad),
-								fun=function(x,var_mad)
-								{
-									x=getValues(x)
-									out=sum(x^2/var_mad,na.rm=TRUE)
-									return(out)
-								})
-						
-						if(verbose) { print("HPC new wt...")}
-						wt=calc_hpc(x=chisqr,
-								fun=function(x)
-								{
-									bands=nlayers(x)
-									x=getValues(x)
-									out=1-pchisq(x,bands)
-									return(out)
-								})
-						wt=mask_hpc(wt,mask)
-					} else
-					{
-						chisqr=calc(MAD,fun=function(x) { sum(x^2/var_mad) })
-						wt=1-calc(chisqr,fun=function(x) { pchisq(x,bands) })
-					}
-				
-					delta = sum(abs(rho-oldrho))
-					oldrho = rho
-					if(verbose)
-					{
-						print(paste("Delta:",delta)) 
-						print("rho:")
-						print(rho)
-						print("****************")
-					}
-					iter = iter+1
-				}
-			}
+			ab_nan=TRUE
+			break
 		}
+
+		s11 = sigma[1:(bands),1:(bands)]
+		s22 = sigma[(bands+1):(2*bands),(bands+1):(2*bands)]
+		s12 = sigma[1:(bands),(bands+1):(2*bands)]
+		s21 = sigma[(bands+1):(2*bands),1:(bands)]
+
+		if(verbose) { print("Calculating generalized eigenvalues and eigenvectors...")}		
+		lama_a=Rdggev(JOBVL=F,JOBVR=T,A=s12%*%solve(s22)%*%s21,B=s11)
+		if(lama_a$INFO!=0) {
+			print(lama_a$INFO)
+			print("Error encountered in lama_a, exiting while loop...")
+			break
+		}
+		
+		lamb_b=Rdggev(JOBVL=F,JOBVR=T,A=s21%*%solve(s11)%*%s12,B=s22)
+		if(lama_b$INFO!=0) {
+			print(lama_b$INFO)
+			print("Error encountered in lama_b, exiting while loop...")
+			break
+		}
+		
+		a=lama_a$VR
+		lama=lama_a$GENEIGENVALUES
+		b=lamb_b$VR
+		lamb=lamb_b$GENEIGENVALUES
+
+		# Eigenvalues, ranked largest to smallest
+		idx=rank(lama)
+		a=a[,idx]
+			
+		idx=rank(lamb)
+		b=b[,idx]
+
+		# Penalization stuff needs to go somewhere around here
+		# IDL Code:
+		
+		
+		#
+		#; stopping criterion
+		#delta = max(abs(rho-old_rho))
+		#old_rho = rho
+		#
+		#; ensure sum of positive correlations between X and U is positive
+		#; their covariance matrix is S11##A
+		#invsig_x = diag_matrix(1/sqrt(diag_matrix(S11)))
+		#sum = total(invsig_x##S11##A,2)
+		#				A = A##diag_matrix(sum/abs(sum))   
+		#
+		#; ensure positive correlation between each pair of canonical variates
+		#cov = diag_matrix(transpose(A)##S12##B)
+		#B = B##diag_matrix(cov/abs(cov))
+		#
+		#if iter gt 0 and iter eq niter then goto, done 
+		
+		rho=sqrt(lamb[idx])	
+		
+		# Fix for near-perfect correlations
+		if(abs(sum(rho)-bands) < corr_thresh*bands)
+		{
+			print("Perfect correlation, exiting...")
+			ab_nan=TRUE
+			break
+		}
+		
+		# normalize dispersions   
+
+		tmp1=t(a)%*%s11%*%a
+		tmp2=1/(sqrt(diag(tmp1)))
+		tmp3=t(array(tmp2,c(bands,length(tmp2))))
+		a=a*tmp3
+			
+		tmp1=t(b)%*%s22%*%b
+		tmp2=1/(sqrt(diag(tmp1)))
+		tmp3=t(array(tmp2,c(bands,length(tmp2))))
+		b=b*tmp3
+
+		# assure positive correlation
+		tmp=diag(t(a)%*%s12%*%b)
+		b=b%*%diag(tmp/abs(tmp))
+					
+		if(is.nan(mean(a)) || is.nan(mean(b)))
+		{
+			if(verbose)
+			{
+				print("Possible numerical precision problem with a or b, exiting loop and using the current results...")
+				ab_nan=TRUE
+			}
+			break
+		}
+		
+		if(timing) { 
+			new_time=proc.time()
+			print("Eigenvalues time:")
+			print(previous_time-new_time)
+			previous_time=new_time
+		}
+		
+		#     canonical and MAD variates
+		if(enable_snow)
+		{
+			if(verbose) { print("HPC calculating canonical and MAD variates...")}
+			MAD=calc_hpc(x=dm,args=list(a=a,b=b,means=means,bands=bands),
+				fun=function(x,a,b,means,bands)
+				{
+					means_a=means[1:bands]
+					means_b=means[(bands+1):(bands*2)]
+					inDataSet1=getValues(spectral_subset(x,(1:bands)))
+					inDataSet2=getValues(spectral_subset(x,((bands+1):(bands*2))))
+					U=as.vector(t(a)%*%(x-means_a))
+					V=as.vector(t(b)%*%(x-means_b))
+					MAD=U-V
+					return(MAD)
+				}	
+			)	
+		} else
+		{
+			if(verbose) { print("Calculating canonical and MAD variates...")}
+			means_a=means[1:bands]
+			means_b=means[(bands+1):(bands*2)]
+			U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
+			V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
+			MAD = U-V
+		}
+
+		if(timing) { 
+			new_time=proc.time()
+			print("MAD time:")
+			print(previous_time-new_time)
+			previous_time=new_time
+		}
+		
+		#     new weights	
+		if(verbose) { print("Generating new weights...")}
+		var_mad=2*(1-rho)
+		
+		if(verbose) { print(var_mad)}
+		
+		if(enable_snow)
+		{
+			if(verbose) { print("HPC chisquare...")}
+			chisqr=calc_hpc(x=MAD,args=list(var_mad=var_mad),
+					fun=function(x,var_mad)
+					{
+						x=getValues(x)
+						out=sum(x^2/var_mad,na.rm=TRUE)
+						return(out)
+					})
+			if(verbose) { print("HPC new wt...")}
+			wt=calc_hpc(x=chisqr,
+					fun=function(x)
+					{
+						bands=nlayers(x)
+						x=getValues(x)
+						out=1-pchisq(x,bands)
+						return(out)
+					})
+			wt=mask_hpc(wt,mask)
+		} else
+		{
+			chisqr=calc(MAD,fun=function(x) { sum(x^2/var_mad) })
+			wt=1-calc(chisqr,fun=function(x) { pchisq(x,bands) })
+		}
+	
+		if(timing) { 
+			new_time=proc.time()
+			print("Chisqr and new weight time:")
+			print(previous_time-new_time)
+			previous_time=new_time
+		}
+		
+		delta = sum(abs(rho-oldrho))
+		oldrho = rho
+		if(verbose)
+		{
+			print(paste("Delta:",delta)) 
+			print("rho:")
+			print(rho)
+			print("****************")
+		}
+		iter = iter+1
 	}
 	
 	# Output results
 	MAD_brick=writeRaster(MAD,filename=output_MAD_filename,format=format,...)
 	chisqr_raster=writeRaster(chisqr,filename=output_chisqr_filename,format=format,...)
-	
-	return(stack(chisqr_raster,MAD_brick))
-	
+	return(stack(chisqr_raster,MAD_brick))	
 }

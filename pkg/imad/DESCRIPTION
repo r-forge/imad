@@ -30,3 +30,4 @@ Collate:
     'mask_hpc.R'
     'spectral_subset.R'
     'setValues_hpc.R'
+    'iMad_original.R'

@@ -8,7 +8,8 @@
     delta = 0.001, corr_thresh = 0.001,
     auto_extract_overlap = TRUE,
     reuse_existing_raster = TRUE, force_extent = TRUE,
-    enable_snow = FALSE, cl = NULL, verbose = FALSE, ...)
+    enable_snow = FALSE, cl = NULL, verbose = FALSE,
+    timing = FALSE, ...)
 }
 \arguments{
   \item{inDataSet1}{A Raster* object of the first image.}
