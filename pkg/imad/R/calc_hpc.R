@@ -193,7 +193,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 		outraster=brick(paste(filename,".grd",sep=""))
 	}
 	
-	if(cluster_shutdown) { endCluster() }
+#	if(cluster_shutdown) { endCluster() }
 	
 	return(outraster)
 }
