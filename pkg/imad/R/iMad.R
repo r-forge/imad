@@ -119,7 +119,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(timing) { 
 		new_time=proc.time()
 		print("Subsetting time:")
-		print(previous_time-new_time)
+		print(new_time-previous_time)
 		previous_time=new_time
 	}
 	
@@ -195,7 +195,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(timing) { 
 		new_time=proc.time()
 		print("Overlap extraction time:")
-		print(previous_time-new_time)
+		print(new_time-previous_time)
 		previous_time=new_time
 	}
 	
@@ -312,7 +312,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(timing) { 
 		new_time=proc.time()
 		print("Masking time:")
-		print(previous_time-new_time)
+		print(new_time-previous_time)
 		previous_time=new_time
 	}
 	
@@ -331,7 +331,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(timing) { 
 		new_time=proc.time()
 		print("Weight creation time:")
-		print(previous_time-new_time)
+		print(new_time-previous_time)
 		previous_time=new_time
 	}
 	
@@ -340,7 +340,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	if(timing) { 
 		new_time=proc.time()
 		print("dm creation time:")
-		print(previous_time-new_time)
+		print(new_time-previous_time)
 		previous_time=new_time
 	}
 	
@@ -373,7 +373,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		if(timing) { 
 			new_time=proc.time()
 			print("sigma_means creation time:")
-			print(previous_time-new_time)
+			print(new_time-previous_time)
 			previous_time=new_time
 		}
 		
@@ -484,7 +484,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		if(timing) { 
 			new_time=proc.time()
 			print("Eigenvalues time:")
-			print(previous_time-new_time)
+			print(new_time-previous_time)
 			previous_time=new_time
 		}
 		
@@ -518,7 +518,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		if(timing) { 
 			new_time=proc.time()
 			print("MAD time:")
-			print(previous_time-new_time)
+			print(new_time-previous_time)
 			previous_time=new_time
 		}
 		
@@ -557,7 +557,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		if(timing) { 
 			new_time=proc.time()
 			print("Chisqr and new weight time:")
-			print(previous_time-new_time)
+			print(new_time-previous_time)
 			previous_time=new_time
 		}
 		
