@@ -1,6 +1,6 @@
 #' @export
 
-setValues_hpc <- function(x,values,layer=1)
+setValues_hpc <- function(x,values,layer=1,verbose=FALSE)
 {
 	require("raster")
 #	nrow_x=nrow(x)
@@ -11,6 +11,7 @@ setValues_hpc <- function(x,values,layer=1)
 	{
 		if(length(values)==ncell(x))
 		{
+		if(verbose) { print("setValues with vector...") }
 		#Same as setValues
 			if(missing(layer))
 			{
@@ -39,6 +40,7 @@ setValues_hpc <- function(x,values,layer=1)
 	
 	if(class(values)=="array")
 	{
+		if(verbose) { print("setValues with array...") }
 		array_dims=dim(values)
 		x_dims=c(nrow(x),ncol(x),nlayers(x))
 		if(length(array_dims) !=3 || sum(array_dims==x_dims) !=3)
@@ -55,6 +57,7 @@ setValues_hpc <- function(x,values,layer=1)
 	
 	if(class(values)=="matrix")
 	{
+		if(verbose) { print("setValues with matrix...") }
 		matrix_dims=dim(values)
 		x_dims=c(nrow(x),ncol(x))
 		if(length(matrix_dims) !=2 || sum(matrix_dims==x_dims) !=2)

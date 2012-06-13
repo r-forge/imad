@@ -171,10 +171,11 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 					verbose=verbose))
 #	}
 		
-
 	if(inmemory)
 	{
-		outraster=setValues_hpc(outraster,unlist(out))
+		if(verbose) { print(length(out[[1]])) }
+		outraster=setValues_hpc(outraster,unlist(out),verbose=verbose)
+#		print(outraster_test)
 	} else
 	{
 		# Let's see if we can trick raster into making us a proper header...
