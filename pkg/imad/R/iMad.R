@@ -95,6 +95,14 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			# chisqr (I don't know if this is right) --> probably fixable
 			1
 	
+	if(canProcessInMemory(raster(inDataSet1),n=inmemory_layers)) 
+	{
+		inmemory=TRUE
+	} else
+	{
+		inmemory=FALSE
+	}
+	
 	# Setup output filenames.
 	output_inDataSet1_subset_filename=paste(output_basename,"_inDataSet1_overlap",sep="")
 	output_inDataSet2_subset_filename=paste(output_basename,"_inDataSet2_overlap",sep="")
@@ -105,7 +113,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	output_MAD_filename=paste(output_basename,"_iMAD",sep="")
 	output_chisqr_filename=paste(output_basename,"_iMAD_chisqr",sep="")
 
-	
 ##### Subset out bands if needed.
 	if(!missing(pos))
 	{
@@ -113,6 +120,13 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		inDataSet1=spectral_subset(inDataSet1,pos)
 		inDataSet2=spectral_subset(inDataSet2,pos)
 	}
+	
+	if(inmemory)
+	# Read input data into memory if needed.
+	{
+		
+	}
+	
 	bands=nlayers(inDataSet1)
 	pos=0:(bands-1)
 
@@ -286,7 +300,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			if(enable_snow)
 			{
 				if(verbose) { print("HPC masking inDataSet1...") }
-				inDataSet1=mask_hpc(inDataSet1,mask)
+				inDataSet1=mask_hpc(inDataSet1,mask,verbose=verbose)
 			} else
 			{
 				inDataSet1=mask(x=inDataSet1,mask=mask,filename=output_inDataSet1_masked,...)

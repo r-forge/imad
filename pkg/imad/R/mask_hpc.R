@@ -1,6 +1,6 @@
 #' @export
 
-mask_hpc <- function(x, mask, cl=NULL, disable_cl=FALSE, ...)
+mask_hpc <- function(x, mask, cl=NULL, disable_cl=FALSE,verbose=FALSE, ...)
 {
 	if(disable_cl)
 	{
@@ -21,7 +21,8 @@ mask_hpc <- function(x, mask, cl=NULL, disable_cl=FALSE, ...)
 				if(nlayers_x > 1)
 				{
 					pos=2:nlayers_x
-					x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
+					x_image=stack(mapply(function(band,inbrick)
+						{raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
 				} else
 				{
 					x_image=raster(x,layer=2)
@@ -29,5 +30,5 @@ mask_hpc <- function(x, mask, cl=NULL, disable_cl=FALSE, ...)
 				x_image[mask != 1] <- NA
 				return(x_image)
 			},...
-	))
+	,verbose=verbose))
 }

@@ -2,7 +2,8 @@
 # Original code by Robert Hijimans, mmap integration by Jonathan Greenberg
 #' @export
 
-calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FALSE,verbose=FALSE,...) 
+calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FALSE,
+		todisk=FALSE,verbose=FALSE,...) 
 {
 	require("raster")
 	require("snowfall")
@@ -59,7 +60,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	if(verbose) { print(outbands) }
 	
 	# The algorithm works differently if it processes in memory, so we setup the output here.	
-	if(canProcessInMemory(raster(x),n=outbands))
+	if(canProcessInMemory(raster(x),n=outbands) && !todisk)
 	{
 		if(verbose) { print("Processing in memory...") }
 		inmemory=TRUE
