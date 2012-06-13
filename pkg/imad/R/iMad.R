@@ -54,6 +54,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		enable_snow=FALSE,cl=NULL,
 		verbose=FALSE,
 		timing=FALSE,
+		inmemory=FALSE,
 		...)
 {
 	require("raster")		
@@ -95,7 +96,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			# chisqr (I don't know if this is right) --> probably fixable
 			1
 	
-	if(canProcessInMemory(raster(inDataSet1),n=inmemory_layers)) 
+	if(canProcessInMemory(raster(inDataSet1),n=inmemory_layers) && inmemory) 
 	{
 		if(verbose) { print("Calculations will be done in memory...") }
 		inmemory=TRUE
@@ -365,6 +366,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	iter = 0
 	ab_nan=FALSE
 
+	if(verbose) { print(memory.profile()) }
+	
 # Mods to include the penalization function.  Comment this out if this chokes.
 #	if(lam>0) { Omega_L = diag(bands) }
 
