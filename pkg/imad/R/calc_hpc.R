@@ -200,6 +200,8 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	}
 	
 #	if(cluster_shutdown) { endCluster() }
+	# Some housekeeping
+	out <- clusterMap(cl,function(x) { x },x=0)
 	
 	return(outraster)
 }
