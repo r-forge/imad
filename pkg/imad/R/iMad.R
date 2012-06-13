@@ -73,6 +73,12 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	
 	# End pre-checks.
 	
+	if(enable_snow)
+	{
+		beginCluster()
+	}
+	
+	
 	# Figure out if we can run this in memory.
 	inmemory_layers=
 			# inDataSet1 (subsetted)
@@ -333,6 +339,12 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		previous_time=new_time
 	}
 	
+	if(enable_snow)
+	{
+		endCluster()
+		beginCluster()
+	}
+	
 	if(verbose) { print("Creating initial weighting raster and stacking inDataSets...")}
 	
 	# IMAGE, nb=1
@@ -354,6 +366,14 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	
 	# IMAGE, nb=nlayers(inDataSet1)+nlayers(inDataSet2)
 	dm = stack(inDataSet1,inDataSet2)
+	if(inmemory) { 
+		dm=brick(dm) 
+		inDataSet1=0
+		inDataSet2=0
+		mask1=0
+		mask2=0
+	}
+	
 	if(timing) { 
 		new_time=proc.time()
 		print("dm creation time:")
@@ -529,6 +549,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			if(verbose) { print("Calculating canonical and MAD variates...")}
 			means_a=means[1:bands]
 			means_b=means[(bands+1):(bands*2)]
+			# This needs to be fixed to use dm
 			U=calc(inDataSet1,fun=function(x) { as.vector(t(a)%*%(x-means_a)) } )
 			V=calc(inDataSet2,fun=function(x) { as.vector(t(b)%*%(x-means_b)) } )
 			MAD = U-V
