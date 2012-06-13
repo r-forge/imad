@@ -7,7 +7,7 @@ setValues_hpc <- function(x,values,layer=1,verbose=FALSE)
 #	ncol_x=ncol(x)
 #	nlayers_x=nlayers(x)
 	
-	if(class(values)=="numeric")
+	if(class(values)=="numeric" || class(values)=="logical")
 	{
 		if(length(values)==ncell(x))
 		{
