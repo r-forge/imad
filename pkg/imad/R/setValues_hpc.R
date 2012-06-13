@@ -15,10 +15,10 @@ setValues_hpc <- function(x,values,layer=1,verbose=FALSE)
 		#Same as setValues
 			if(missing(layer))
 			{
-				x=setValues(x,values)
+				out=setValues(x,values)
 			} else
 			{
-				x=setValues(x,values,layer)
+				out=setValues(x,values,layer)
 			}
 		} else
 		{
@@ -31,7 +31,7 @@ setValues_hpc <- function(x,values,layer=1,verbose=FALSE)
 				endidx=(c(2:(nlayers(x)+1))-1)*ncell(x)
 				for(i in 1:nlayers(x))
 				{
-					x <- setValues(x,values[startidx[i]:endidx[i]],layer=i)
+					out <- setValues(x,values[startidx[i]:endidx[i]],layer=i)
 				}
 			}
 			
@@ -50,7 +50,7 @@ setValues_hpc <- function(x,values,layer=1,verbose=FALSE)
 		# For-next loop not the most elegant...
 		for(i in 1:nlayers(x))
 		{
-			x <- setValues(x,as.vector(values[,,i]),layer=i)			
+			out <- setValues(x,as.vector(values[,,i]),layer=i)			
 		}	
 		
 	}
@@ -64,7 +64,7 @@ setValues_hpc <- function(x,values,layer=1,verbose=FALSE)
 		{
 			stop ("values of type matrix must have two dimensions of c(nrow(x),ncol(x))")
 		}
-		x <- setValues(x,as.vector(values),layer=layer)
+		out <- setValues(x,as.vector(values),layer=layer)
 	}
-	return(x)
+	return(out)
 }
