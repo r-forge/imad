@@ -97,6 +97,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	
 	if(canProcessInMemory(raster(inDataSet1),n=inmemory_layers)) 
 	{
+		if(verbose) { print("Calculations will be done in memory...") }
 		inmemory=TRUE
 	} else
 	{
