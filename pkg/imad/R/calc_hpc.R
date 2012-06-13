@@ -173,9 +173,9 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 		
 	if(inmemory)
 	{
-		if(verbose) { print(length(out[[1]])) }
-		print(class(unlist(out)))
-		print(dims(unlist(out)))
+#		if(verbose) { print(length(out[[1]])) }
+#		print(class(unlist(out)))
+#		print(dims(unlist(out)))
 		outraster=setValues_hpc(outraster,unlist(out),verbose=verbose)
 #		print(outraster_test)
 	} else
