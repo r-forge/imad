@@ -531,7 +531,14 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		#     canonical and MAD variates
 		if(enable_snow)
 		{
-			if(verbose) { print("HPC calculating canonical and MAD variates...")}
+			if(verbose) { 
+				print("HPC calculating canonical and MAD variates...")
+				print(means)
+				print(bands)
+				print(a)
+				print(b)
+			}
+			
 			MAD=calc_hpc(x=dm,args=list(a=a,b=b,means=means,bands=bands),
 				fun=function(x,a,b,means,bands)
 				{
@@ -539,8 +546,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					means_b=means[(bands+1):(bands*2)]
 					inDataSet1=getValues(spectral_subset(x,(1:bands)))
 					inDataSet2=getValues(spectral_subset(x,((bands+1):(bands*2))))
-					U=as.vector(t(a)%*%(x-means_a))
-					V=as.vector(t(b)%*%(x-means_b))
+					U=as.vector(t(a)%*%(inDataSet1-means_a))
+					V=as.vector(t(b)%*%(inDataSet2-means_b))
 					MAD=U-V
 					return(MAD)
 				}	
