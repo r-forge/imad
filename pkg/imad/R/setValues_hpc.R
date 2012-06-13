@@ -45,7 +45,7 @@ setValues_hpc <- function(x,values,layer=1,verbose=FALSE)
 				
 				for(i in 1:nlayers(x))
 				{
-					out <- setValues(x,values[startidx[i]:endidx[i]],layer=i)
+					out <- setValues(x,values) # ,values[startidx[i]:endidx[i]],layer=i)
 				}
 			}
 			
