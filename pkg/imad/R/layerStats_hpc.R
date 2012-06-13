@@ -8,7 +8,8 @@
 
 #' @export
 
-layerStats_hpc <- function(x, stat, w, asSample=FALSE, na.rm=FALSE, enable_snow=TRUE, cl=NULL, m=2, verbose=FALSE, ...) {
+layerStats_hpc <- function(x, stat, w, asSample=FALSE, na.rm=FALSE, enable_snow=TRUE, cl=NULL, m=2, verbose=FALSE,
+		todisk=FALSE,...) {
 	if(enable_snow) { 
 		require("snowfall")
 		if (is.null(cl)) {
@@ -22,7 +23,8 @@ layerStats_hpc <- function(x, stat, w, asSample=FALSE, na.rm=FALSE, enable_snow=
 	stopifnot(is.logical(asSample) & !is.na(asSample))
 	
 	if (stat == 'weighted.cov') {
-		return(layerStats_hpc_weighted.cov(x,w,na.rm=na.rm, enable_snow=enable_snow, cl=cl, m=m,verbose=verbose))
+		return(layerStats_hpc_weighted.cov(x,w,na.rm=na.rm, enable_snow=enable_snow, cl=cl, m=m,todisk=todisk,
+				verbose=verbose))
 	}
 	
 	if(stat=="sum")

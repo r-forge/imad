@@ -1,6 +1,8 @@
 #' @export
 
-layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_snow=FALSE, cl=NULL, m=4,verbose=FALSE)
+layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,
+		enable_snow=FALSE, cl=NULL, m=2, todisk=FALSE,
+		verbose=FALSE)
 {
 	require("raster")
 	
@@ -64,6 +66,7 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 					})	
 			if(verbose) { print("Calculated weighted means...")}
 			means=layerStats_hpc(xw,'sum',na.rm=na.rm)/sumw
+			xw=0
 #			sumw <- sumw - asSample
 			if(verbose) { print("sqrt(wt)...")}
 #			w_sqrt = calc_hpc(x=w,fun=sqrt)
