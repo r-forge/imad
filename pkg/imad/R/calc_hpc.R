@@ -67,11 +67,11 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 		if(outbands > 1)
 		{
 			outraster <- brick(x,nl=outbands)
-			outraster <- readAll(outraster)
+#			outraster <- readAll(outraster)
 		} else
 		{
 			outraster <- raster(x)
-			outraster <- readAll(outraster)
+#			outraster <- readAll(outraster)
 		}
 #		out<-array(dim=c(nrow(x),ncol(x),outbands))
 	} else
