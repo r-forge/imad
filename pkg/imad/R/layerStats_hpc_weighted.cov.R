@@ -1,6 +1,6 @@
 #' @export
 
-layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_snow=FALSE, cl=NULL, m=2,verbose=FALSE)
+layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_snow=FALSE, cl=NULL, m=4,verbose=FALSE)
 {
 	require("raster")
 	
@@ -57,7 +57,8 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 						nlayers_x=nlayers(x)
 						w=raster(x,layer=1)
 						pos=2:nlayers_x
-						x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
+						x_image=spectral_subset(x,pos)
+#						x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
 						return(w*x_image)
 					})	
 			if(verbose) { print("Calculated weighted means...")}
