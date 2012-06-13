@@ -121,13 +121,6 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		inDataSet2=spectral_subset(inDataSet2,pos)
 	}
 	
-	if(inmemory)
-	# Read input data into memory if possible.
-	{
-		inDataSet1=readAll(inDataSet1)
-		inDataSet2=readAll(inDataSet2)
-	}
-	
 	bands=nlayers(inDataSet1)
 	pos=0:(bands-1)
 
@@ -205,6 +198,13 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		
 		if(cols != cols2 || rows != rows2) 
 			{ stop("Input rows and columns must be the same, try using auto_extract_overlap=TRUE...") }
+	}
+	
+	if(inmemory)
+	# Read input data into memory if possible.
+	{
+		inDataSet1=readAll(inDataSet1)
+		inDataSet2=readAll(inDataSet2)
 	}
 	
 	if(timing) { 
