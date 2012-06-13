@@ -3,7 +3,7 @@
 #' @export
 
 calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FALSE,
-		todisk=FALSE,verbose=FALSE,...) 
+		todisk=TRUE,verbose=FALSE,...) 
 {
 	require("raster")
 	require("snowfall")
