@@ -59,7 +59,8 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 						pos=2:nlayers_x
 						x_image=spectral_subset(x,pos)
 #						x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
-						return(w*x_image)
+						out=w*x_image
+						return(out)
 					})	
 			if(verbose) { print("Calculated weighted means...")}
 			means=layerStats_hpc(xw,'sum',na.rm=na.rm)/sumw
@@ -75,7 +76,8 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,enable_s
 					nlayers_x=nlayers(x)
 					pos=2:nlayers_x
 					w=raster(x,layer=1)
-					x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
+					x_image=spectral_subset(x,pos)
+#					x_image=stack(mapply(function(band,inbrick){raster(inbrick,layer=band)},band=pos,MoreArgs=list(inbrick=x)))
 					out=(x_image-means)*calc(w,sqrt)
 					print(out)
 					return(out)
