@@ -157,6 +157,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 					return(r)
 				} else
 				{
+					require("mmap")
 					# This performs parallel writes
 					cellStart=((cellFromRowCol(x,row=tr$row[i],col=1))-1)*outbands+1
 					cellEnd=((cellFromRowCol(x,row=tr$row2[i],col=ncol(x))))*outbands
