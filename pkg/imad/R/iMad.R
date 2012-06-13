@@ -73,10 +73,10 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	
 	# End pre-checks.
 	
-	if(enable_snow)
-	{
-		beginCluster()
-	}
+#	if(enable_snow)
+#	{
+#		beginCluster()
+#	}
 	
 	
 	# Figure out if we can run this in memory.
@@ -339,12 +339,12 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		previous_time=new_time
 	}
 	
-	if(enable_snow)
-	{
-		endCluster()
-		beginCluster()
-	}
-	
+#	if(enable_snow)
+#	{
+#		endCluster()
+#		beginCluster()
+#	}
+#	
 	if(verbose) { print("Creating initial weighting raster and stacking inDataSets...")}
 	
 	# IMAGE, nb=1
