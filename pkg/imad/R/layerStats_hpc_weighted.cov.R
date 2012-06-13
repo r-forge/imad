@@ -2,7 +2,7 @@
 
 layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,
 		enable_snow=FALSE, cl=NULL, m=2, todisk=FALSE,
-		verbose=FALSE)
+		verbose=FALSE,debug=FALSE)
 {
 	require("raster")
 	
@@ -115,6 +115,9 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,
 	# Need to spawn mini clusters for this, or just let it go sequentially...
 			if(verbose) { print("creating v_list") }
 			# This can definitely be sped up -- read the z-profile ONCE.
+	
+			if(debug) { browser() }
+	
 			v_list=mapply(FUN=function(ij,x,na.rm,sumw) { 
 						i <- ij[1]
 						j <- ij[2]

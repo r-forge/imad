@@ -110,31 +110,6 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 	tr_out$row2=((tr$row2)*outbands)
 	
 	i=1:tr$n
-	
-#	if(disable_cl)
-#	# Use only for debugging.
-#	{
-#		mapply(function(i,fun,args,x,tr,filename,outbands) 
-#			{
-#				r <- crop(x, extent(x, r1=tr$row[i], r2=tr$row2[i], c1=1, c2=ncol(x)))
-#				if(!is.null(args)) {
-#					r <- fun(r) 
-#				} else
-#				{
-#					r <- do.call(fun, c(r, args))
-#				}
-#				out <- mmap(filename,mode=real64())
-#				cellStart=((cellFromRowCol(x,row=tr$row[i],col=1))-1)*outbands+1
-#				cellEnd=((cellFromRowCol(x,row=tr$row2[i],col=ncol(x))))*outbands
-#				out[cellStart:cellEnd] <- as.vector(t(getValues(r)))
-##				out[cellFromRow(x,tr$row[i]:tr$row2[i])] <- as.vector(getValues(r))
-#				munmap(out)
-#				return(NULL)
-#			},
-#			i,MoreArgs=list(fun=fun,x=x,tr=tr,args=args,filename=filename,outbands=outbands))
-#
-#	} else
-#	{
 
 	if(disable_cl)
 	{
@@ -147,8 +122,6 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 					{
 						r <- do.call(fun, c(r, args))
 					}
-#				if(verbose) { print(class(r)) }
-#				if(verbose) { print(dim(r)) }
 					
 					if(inmemory)
 					{
@@ -188,8 +161,6 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 				{
 					r <- do.call(fun, c(r, args))
 				}
-#				if(verbose) { print(class(r)) }
-#				if(verbose) { print(dim(r)) }
 				
 				if(inmemory)
 				{
@@ -220,11 +191,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 		
 	if(inmemory)
 	{
-#		if(verbose) { print(length(out[[1]])) }
-#		print(class(unlist(out)))
-#		print(dims(unlist(out)))
 		outraster=setValues_hpc(outraster,unlist(out),verbose=verbose)
-#		print(outraster_test)
 	} else
 	{
 		# Let's see if we can trick raster into making us a proper header...

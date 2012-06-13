@@ -9,7 +9,7 @@
 #' @export
 
 layerStats_hpc <- function(x, stat, w, asSample=FALSE, na.rm=FALSE, enable_snow=TRUE, cl=NULL, m=2, verbose=FALSE,
-		todisk=FALSE,...) {
+		todisk=FALSE,debug=FALSE,...) {
 	if(enable_snow) { 
 		require("snowfall")
 		if (is.null(cl)) {
@@ -29,7 +29,7 @@ layerStats_hpc <- function(x, stat, w, asSample=FALSE, na.rm=FALSE, enable_snow=
 	
 	if(stat=="sum")
 	{
-		return(layerStats_hpc_sum(x,na.rm=na.rm, enable_snow=enable_snow, cl=cl, m=m,verbose=verbose))
+		return(layerStats_hpc_sum(x,na.rm=na.rm, enable_snow=enable_snow, cl=cl, m=m,verbose=verbose,debug=debug))
 	}
 	
 	if(stat=="mean")
