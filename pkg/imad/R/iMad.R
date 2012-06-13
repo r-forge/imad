@@ -446,9 +446,9 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		}
 		
 		lamb_b=Rdggev(JOBVL=F,JOBVR=T,A=s21%*%solve(s11)%*%s12,B=s22)
-		if(lama_b$INFO!=0) {
-			print(lama_b$INFO)
-			print("Error encountered in lama_b, exiting while loop...")
+		if(lamb_b$INFO!=0) {
+			print(lamb_b$INFO)
+			print("Error encountered in lamb_b, exiting while loop...")
 			break
 		}
 		
