@@ -122,9 +122,10 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	}
 	
 	if(inmemory)
-	# Read input data into memory if needed.
+	# Read input data into memory if possible.
 	{
-		
+		inDataSet1=readAll(inDataSet1)
+		inDataSet2=readAll(inDataSet2)
 	}
 	
 	bands=nlayers(inDataSet1)
