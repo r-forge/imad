@@ -24,12 +24,12 @@ layerStats_hpc <- function(x, stat, w, asSample=FALSE, na.rm=FALSE, enable_snow=
 	
 	if (stat == 'weighted.cov') {
 		return(layerStats_hpc_weighted.cov(x,w,na.rm=na.rm, enable_snow=enable_snow, cl=cl, m=m,todisk=todisk,
-				verbose=verbose))
+				verbose=verbose,debug=debug))
 	}
 	
 	if(stat=="sum")
 	{
-		return(layerStats_hpc_sum(x,na.rm=na.rm, enable_snow=enable_snow, cl=cl, m=m,verbose=verbose,debug=debug))
+		return(layerStats_hpc_sum(x,na.rm=na.rm, enable_snow=enable_snow, cl=cl, m=m,verbose=verbose))
 	}
 	
 	if(stat=="mean")

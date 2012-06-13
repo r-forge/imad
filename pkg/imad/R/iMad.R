@@ -340,7 +340,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		previous_time=new_time
 	}
 	
-	if(debug) { browser() }
+#	if(debug) { browser() }
 	
 #	if(enable_snow)
 #	{
@@ -360,7 +360,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		wt = raster(inDataSet1,layer=1)*0+1
 	}
 	
-	if(debug) { browser() }
+#	if(debug) { browser() }
 	
 	if(timing) { 
 		new_time=proc.time()
@@ -386,7 +386,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		previous_time=new_time
 	}
 	
-	if(debug) { browser() }
+#	if(debug) { browser() }
 	
 	delta = 1.0
 	oldrho = array(data=0,dim=bands)
@@ -406,6 +406,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			print(paste("Iteration:",iter))
 		}
 
+		if(debug) { browser() }
+		
 		if(enable_snow)
 		{
 			if(verbose) { print("HPC calculating weighted covariance and means...")}
