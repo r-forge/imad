@@ -55,6 +55,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		verbose=FALSE,
 		timing=FALSE,
 		inmemory=FALSE,
+		debug=FALSE,
 		...)
 {
 	require("raster")		
@@ -339,6 +340,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		previous_time=new_time
 	}
 	
+	if(debug) { browser() }
+	
 #	if(enable_snow)
 #	{
 #		endCluster()
@@ -356,6 +359,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 	{
 		wt = raster(inDataSet1,layer=1)*0+1
 	}
+	
+	if(debug) { browser() }
 	
 	if(timing) { 
 		new_time=proc.time()
@@ -380,6 +385,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		print(new_time-previous_time)
 		previous_time=new_time
 	}
+	
+	if(debug) { browser() }
 	
 	delta = 1.0
 	oldrho = array(data=0,dim=bands)
@@ -417,6 +424,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			previous_time=new_time
 		}
 		
+		if(debug) { browser() }
+		
 		if(verbose) { print(sigma_means) }
 		
 		sigma=sigma_means[[1]]
@@ -451,6 +460,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			print("Error encountered in lamb_b, exiting while loop...")
 			break
 		}
+		
+		if(debug) { browser() }
 		
 		a=lama_a$VR
 		lama=lama_a$GENEIGENVALUES
@@ -528,6 +539,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			previous_time=new_time
 		}
 		
+		if(debug) { browser() }
+		
 		#     canonical and MAD variates
 		if(enable_snow)
 		{
@@ -563,6 +576,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			MAD = U-V
 		}
 
+		if(debug) { browser() }
+		
 		if(timing) { 
 			new_time=proc.time()
 			print("MAD time:")
@@ -576,6 +591,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		
 		if(verbose) { print(var_mad)}
 		
+		if(debug) { browser() }
+		
 		if(enable_snow)
 		{
 			if(verbose) { print("HPC chisquare...")}
@@ -586,6 +603,9 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 						out=sum(x^2/var_mad,na.rm=TRUE)
 						return(out)
 					})
+			
+			if(debug) { browser() }
+			
 			if(verbose) { print("HPC new wt...")}
 			wt=calc_hpc(x=chisqr,
 					fun=function(x)
@@ -595,6 +615,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 						out=1-pchisq(x,bands)
 						return(out)
 					})
+			if(debug) { browser() }
 			wt=mask_hpc(wt,mask)
 		} else
 		{
@@ -619,6 +640,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			print("****************")
 		}
 		iter = iter+1
+		if(debug) { browser() }
 	}
 	
 	# Output results

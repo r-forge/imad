@@ -3,7 +3,7 @@
 #' @export
 
 calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FALSE,
-		todisk=TRUE,verbose=FALSE,...) 
+		todisk=TRUE,verbose=FALSE,debug=FALSE,...) 
 {
 	require("raster")
 	require("snowfall")
@@ -135,6 +135,49 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 #
 #	} else
 #	{
+
+	if(disable_cl)
+	{
+		out <- mapply(function(fun,i,args,x,tr,filename,outbands,inmemory,verbose) 
+				{
+					r <- crop(x, extent(x, r1=tr$row[i], r2=tr$row2[i], c1=1, c2=ncol(x)))
+					if(is.null(args)) {
+						r <- fun(r) 
+					} else
+					{
+						r <- do.call(fun, c(r, args))
+					}
+#				if(verbose) { print(class(r)) }
+#				if(verbose) { print(dim(r)) }
+					
+					if(inmemory)
+					{
+						if(inherits(r, 'Raster'))
+						{
+							r=getValues(r)
+						}
+						return(r)
+					} else
+					{
+						require("mmap")
+						# This performs parallel writes
+						cellStart=((cellFromRowCol(x,row=tr$row[i],col=1))-1)*outbands+1
+						cellEnd=((cellFromRowCol(x,row=tr$row2[i],col=ncol(x))))*outbands
+						# Disable transpose for BIL?
+						out <- mmap(filename,mode=real64())
+						if(inherits(r, 'Raster')) 
+						{ out[cellStart:cellEnd] <- as.vector(t(getValues(r))) }
+						else
+						{ out[cellStart:cellEnd] <- as.vector(t(r)) }
+						munmap(out)
+						return(NULL)
+					}
+				},
+				i,MoreArgs=list(fun=fun,x=x,tr=tr,args=args,filename=filename,outbands=outbands,inmemory=inmemory,
+						verbose=verbose))
+	} else
+	{
+
 		if(verbose) { print("Starting the cluster function...")}
 		out <- clusterMap(cl,function(fun,i,args,x,tr,filename,outbands,inmemory,verbose) 
 			{
@@ -173,7 +216,7 @@ calc_hpc <- function(x, fun, args=NULL, filename='', cl=NULL, m=2, disable_cl=FA
 			},
 			i,MoreArgs=list(fun=fun,x=x,tr=tr,args=args,filename=filename,outbands=outbands,inmemory=inmemory,
 					verbose=verbose))
-#	}
+	}
 		
 	if(inmemory)
 	{
