@@ -22,6 +22,7 @@ setValues_hpc <- function(x,values,layer=1,verbose=FALSE)
 			}
 		} else
 		{
+			if(verbose) { print("setValues with longer vector...") }
 			if(length(values)!=ncell(x)*nlayers(x))
 			{
 				stop ("values of type numeric must have a length of ncell(x)*nlayers(x)")
@@ -29,6 +30,11 @@ setValues_hpc <- function(x,values,layer=1,verbose=FALSE)
 			{
 				startidx=((c(1:nlayers(x))-1)*ncell(x))+1
 				endidx=(c(2:(nlayers(x)+1))-1)*ncell(x)
+				
+				if(verbose) { print(startidx) }
+				if(verbose) { print(endidx) }
+				if(verbose) { print(length(values)) }
+				
 				for(i in 1:nlayers(x))
 				{
 					out <- setValues(x,values[startidx[i]:endidx[i]],layer=i)
