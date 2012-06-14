@@ -406,13 +406,13 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			print(paste("Iteration:",iter))
 		}
 
-		if(debug) { browser() }
+#		if(debug) { browser() }
 		
 		if(enable_snow)
 		{
 			if(verbose) { print("HPC calculating weighted covariance and means...")}
 			sigma_means=layerStats_hpc(x=dm,w=wt,stat='weighted.cov',
-				na.rm=TRUE,enable_snow=TRUE,verbose=verbose,todisk=TRUE,debug=debug)
+				na.rm=TRUE,enable_snow=TRUE,verbose=verbose,todisk=TRUE)
 		} else
 		{
 			if(verbose) { print("Calculating weighted covariance and means...")}
@@ -426,7 +426,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			previous_time=new_time
 		}
 		
-		if(debug) { browser() }
+#		if(debug) { browser() }
 		
 		if(verbose) { print(sigma_means) }
 		
