@@ -561,8 +561,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 					means_b=means[(bands+1):(bands*2)]
 					inDataSet1=getValues(spectral_subset(x,(1:bands)))
 					inDataSet2=getValues(spectral_subset(x,((bands+1):(bands*2))))
-					U=as.vector(t(a)%*%(inDataSet1-means_a))
-					V=as.vector(t(b)%*%(inDataSet2-means_b))
+					U=as.vector(t(a)%*%t(inDataSet1-means_a))
+					V=as.vector(t(b)%*%t(inDataSet2-means_b))
 					MAD=U-V
 					return(MAD)
 				}	
