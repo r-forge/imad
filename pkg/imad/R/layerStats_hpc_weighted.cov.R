@@ -118,23 +118,50 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,
 	
 			if(debug) { browser() }
 	
-			v_list=mapply(FUN=function(ij,x,na.rm,sumw) { 
-						i <- ij[1]
-						j <- ij[2]
-						rasteri=raster(x,layer=i)
-						rasterj=raster(x,layer=j)
-#						r <- raster(x,layer=i)*raster(x,layer=j)
-						r=calc_hpc(stack(rasteri,rasterj),
-								fun=function(x)
-								{
-									out=raster(x,layer=1)*raster(x,layer=2)
-									return(out)
-								})
-#						v <- cellStats(r, stat='sum', na.rm=na.rm) / sumw
-						v=layerStats_hpc(r,stat='sum',na.rm=na.rm)/sumw
-						return(v)
-					},
-					ij=ij_list,MoreArgs=list(x=x,na.rm=na.rm,sumw=sumw))	
+			ij_idx=1:length(ij[,1])
+			
+			v_stack=calc_hpc(x,args=list(ij=ij,ij_idx=ij_idx),
+				fun=function(x,ij,ij_idx)
+				{
+					out=stack(
+						mapply(
+							FUN=function(x,ij,ij_idx)
+							{
+								out=raster(x,layer=ij[ij_idx,1])*raster(x,layer=ij[ij_idx,2])
+								return(out)
+							},
+							ij_idx,MoreArgs=list(x=x,ij=ij)
+						)
+					)
+				}			
+			)
+			
+			v_stack_sum=mapply(
+				FUN=function(v_stack,ij_idx,sumw)
+				{
+					v_sum=layerStats_hpc(raster(v_stack,layer=ij_idx),stat='sum',na.rm=na.rm)/sumw
+					return(v_sum)
+				},ij_idx,MoreArgs=list(v_stack=v_stack,sumw=sumw)
+			)
+			
+#			v_list=mapply(FUN=function(ij,x,na.rm,sumw) { 
+#						i <- ij[1]
+#						j <- ij[2]
+#						rasteri=raster(x,layer=i)
+#						rasterj=raster(x,layer=j)
+##						r <- raster(x,layer=i)*raster(x,layer=j)
+#						r=calc_hpc(stack(rasteri,rasterj),
+#								fun=function(x)
+#								{
+#									out=raster(x,layer=1)*raster(x,layer=2)
+#									return(out)
+#								})
+##						v <- cellStats(r, stat='sum', na.rm=na.rm) / sumw
+#						v=layerStats_hpc(r,stat='sum',na.rm=na.rm)/sumw
+#						return(v)
+#					},
+#					ij=ij_list,MoreArgs=list(x=x,na.rm=na.rm,sumw=sumw))	
+
 			if(verbose) { print("done with v_list") }
 			for(k in 1:(length(v_list)))
 			{
