@@ -167,7 +167,7 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,
 			{
 				i=ij_list[[k]][1]
 				j=ij_list[[k]][2]
-				mat[j,i] <- mat[i,j] <- v_list[[k]]
+				mat[j,i] <- mat[i,j] <- v_stack_sum[[k]]
 			}
 			if(verbose) { print("Done making the matrix...")}
 		} else
