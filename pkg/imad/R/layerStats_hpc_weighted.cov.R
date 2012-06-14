@@ -163,7 +163,7 @@ layerStats_hpc_weighted.cov <- function(x,w,na.rm=FALSE, asSample=FALSE,
 #					ij=ij_list,MoreArgs=list(x=x,na.rm=na.rm,sumw=sumw))	
 
 			if(verbose) { print("done with v_list") }
-			for(k in 1:(length(v_list)))
+			for(k in 1:(length(v_stack_sum)))
 			{
 				i=ij_list[[k]][1]
 				j=ij_list[[k]][2]
