@@ -402,6 +402,8 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 if(!is.null(debug_outputs))
 {
 	setwd(debug_outputs)
+	writeRaster(inDataSet1,filename="inDataSet1",format="ENVI")
+	writeRaster(inDataSet2,filename="inDataSet2",format="ENVI")
 	writeRaster(dm,filename="debug_dm",format="ENVI")
 	writeRaster(wt,filename="debug_wt",format="ENVI")
 	writeRaster(mask,filename="debug_mask",format="ENVI")
