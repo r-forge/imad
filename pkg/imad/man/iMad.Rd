@@ -9,7 +9,8 @@
     auto_extract_overlap = TRUE,
     reuse_existing_raster = TRUE, force_extent = TRUE,
     enable_snow = FALSE, cl = NULL, verbose = FALSE,
-    timing = FALSE, ...)
+    timing = FALSE, inmemory = FALSE, debug = FALSE,
+    debug_outputs = NULL, ...)
 }
 \arguments{
   \item{inDataSet1}{A Raster* object of the first image.}

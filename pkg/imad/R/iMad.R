@@ -56,6 +56,7 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 		timing=FALSE,
 		inmemory=FALSE,
 		debug=FALSE,
+		debug_outputs=NULL,
 		...)
 {
 	require("raster")		
@@ -398,6 +399,14 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 # Mods to include the penalization function.  Comment this out if this chokes.
 #	if(lam>0) { Omega_L = diag(bands) }
 
+if(!is.null(debug_outputs))
+{
+	setwd(debug_outputs)
+	writeRaster(dm,filename="debug_dm",format="ENVI")
+	writeRaster(wt,filename="debug_wt",format="ENVI")
+	writeRaster(mask,filename="debug_mask",format="ENVI")
+}
+
 ### MAIN LOOP
 	while(delta > 0.001 && iter < maxiter && !(ab_nan))
 	{
@@ -631,6 +640,15 @@ iMad <- function(inDataSet1,inDataSet2,pos,
 			print(new_time-previous_time)
 			previous_time=new_time
 		}
+		
+		if(!is.null(debug_outputs))
+		{
+			setwd(debug_outputs)
+			writeRaster(MAD,filename=paste("debug_MAD_",add_leading_zeroes(iter,number_length=3),sep=""),format="ENVI")
+			writeRaster(chisqr,filename=paste("debug_chisqr_",add_leading_zeroes(iter,number_length=3),sep=""),format="ENVI")
+			writeRaster(wt,filename=paste("chisqr_wt_",add_leading_zeroes(iter,number_length=3),sep=""),format="ENVI")
+		}
+		
 		
 		delta = sum(abs(rho-oldrho))
 		oldrho = rho

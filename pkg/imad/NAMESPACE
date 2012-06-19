@@ -1,5 +1,6 @@
 export(RADCAL)
 export(Rdggev)
+export(add_leading_zeroes)
 export(brick_to_stack)
 export(build_raster_filename)
 export(calc_hpc)

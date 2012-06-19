@@ -31,3 +31,4 @@ Collate:
     'spectral_subset.R'
     'setValues_hpc.R'
     'iMad_original.R'
+    'add_leading_zeroes.R'
